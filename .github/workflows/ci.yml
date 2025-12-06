@@ -10,6 +10,7 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    name: lint-test
     permissions:
       contents: read
       pull-requests: write
@@ -35,3 +36,38 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Report check status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            // Get the head SHA from the PR or use the current SHA
+            let headSha = context.sha;
+            if (context.payload.pull_request) {
+              headSha = context.payload.pull_request.head.sha;
+            } else if (context.eventName === 'pull_request') {
+              // For pull_request events, get the SHA from the event
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number
+              });
+              headSha = pr.data.head.sha;
+            }
+            
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'CI / lint-test',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: conclusion === 'success' ? 'Lint and test passed' : 'Lint and test failed',
+                summary: conclusion === 'success' 
+                  ? 'All lint and test checks passed successfully'
+                  : 'Lint or test checks failed'
+              }
+            });
