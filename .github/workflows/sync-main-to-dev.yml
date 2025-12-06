@@ -10,7 +10,8 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to push to dev branch
+      contents: write   # Required to create branches and PRs
+      pull-requests: write  # Required to create and merge PRs
       issues: write     # Required to create issues on merge conflicts
     # Only run if the push was a merge (not a direct push to main)
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -27,16 +28,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Checkout dev branch
-        run: git checkout dev
-
-      - name: Pull latest dev
-        run: git pull origin dev
-
-      - name: Merge main into dev
+      - name: Create sync branch and merge main
         id: merge
         continue-on-error: true
         run: |
+          # Create unique branch name
+          BRANCH_NAME="sync/main-to-dev-$(date +%s)"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          
+          # Checkout dev and create sync branch
+          git checkout dev
+          git pull origin dev
+          git checkout -b "$BRANCH_NAME"
+          
+          # Merge main into sync branch
           set +e
           git merge origin/main --no-edit -m "chore: sync main into dev"
           merge_exit_code=$?
@@ -58,9 +63,32 @@ jobs:
             echo "Merge successful"
           fi
 
-      - name: Push to dev
+      - name: Push sync branch
         if: steps.check_merge.outputs.has_conflicts == 'false'
-        run: git push origin dev
+        run: |
+          git push origin "${{ steps.merge.outputs.branch_name }}"
+
+      - name: Create PR
+        if: steps.check_merge.outputs.has_conflicts == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = '${{ steps.merge.outputs.branch_name }}';
+            
+            // Create PR
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'chore: sync main into dev',
+              head: branchName,
+              base: 'dev',
+              body: 'Automated sync of main branch into dev. This PR will be auto-merged once checks pass.',
+            });
+            
+            console.log(`Created PR #${pr.data.number} for syncing main into dev`);
+            
+            // Note: PR will need to pass status checks before it can be merged
+            // You may need to manually approve/merge, or set up auto-merge
 
       - name: Create issue on conflict
         if: steps.check_merge.outputs.has_conflicts == 'true'
@@ -74,4 +102,3 @@ jobs:
               body: 'The automatic sync from main to dev failed due to merge conflicts. Please manually merge main into dev.',
               labels: ['bug', 'automation']
             });
-
