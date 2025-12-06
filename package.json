@@ -7,7 +7,7 @@
     "start": "pnpm run build:dialog && ts-node src/cli.ts",
     "start:gui": "pnpm run build:gui && electron dist/gui/main.js",
     "build:dialog": "tsc src/gui/fileDialog.ts --outDir dist/gui",
-    "build:gui": "tsc --project . && cp src/gui/renderer.html src/gui/renderer.js dist/gui/",
+    "build:gui": "tsc --project tsconfig.build.json && cp src/gui/renderer.html src/gui/renderer.js dist/gui/",
     "build:executable": "pnpm run build:gui && electron-builder",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
