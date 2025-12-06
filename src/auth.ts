@@ -106,8 +106,22 @@ The file 'client_secret.json' is required for Google Sheets access.
     await oAuth2Client.getAccessToken();
 
     return oAuth2Client;
-  } catch (err) {
-    const errorCode = err?.response?.data?.error;
+  } catch (err: unknown) {
+    // Check if error has response property (Google API error)
+    const hasResponse =
+      err &&
+      typeof err === 'object' &&
+      'response' in err &&
+      err.response &&
+      typeof err.response === 'object' &&
+      'data' in err.response &&
+      err.response.data &&
+      typeof err.response.data === 'object' &&
+      'error' in err.response.data;
+
+    const errorCode = hasResponse
+      ? (err as { response: { data: { error?: string } } }).response.data.error
+      : undefined;
 
     if (errorCode === 'invalid_grant') {
       console.warn('⚠️ Token expired or revoked. Regenerating...');
