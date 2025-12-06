@@ -9,6 +9,9 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push to dev branch
+      issues: write     # Required to create issues on merge conflicts
     # Only run if the push was a merge (not a direct push to main)
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
