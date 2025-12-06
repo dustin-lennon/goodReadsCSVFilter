@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.3...v1.0.4) (2025-12-06)
+
+
+### Bug Fixes
+
+* enable CI workflow for PRs to main branch ([582116a](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/582116ac7eb12c3121408e8b674fc3cc93d83150))
+
 ## [1.0.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.2...v1.0.3) (2025-12-06)
 
 
