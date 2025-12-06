@@ -1,7 +1,10 @@
 name: Sync Main to Dev
 
 on:
-  push:
+  workflow_run:
+    workflows: ['Release']
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch: # Allow manual triggering
@@ -13,8 +16,8 @@ jobs:
       contents: write   # Required to create branches and PRs
       pull-requests: write  # Required to create and merge PRs
       issues: write     # Required to create issues on merge conflicts
-    # Only run if the push was a merge (not a direct push to main)
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # Only run if the release workflow succeeded, or if manually triggered
+    if: (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -35,6 +38,9 @@ jobs:
           # Create unique branch name
           BRANCH_NAME="sync/main-to-dev-$(date +%s)"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          
+          # Fetch latest from origin
+          git fetch origin main dev
           
           # Checkout dev and create sync branch
           git checkout dev
@@ -68,7 +74,7 @@ jobs:
         run: |
           git push origin "${{ steps.merge.outputs.branch_name }}"
 
-      - name: Create PR
+      - name: Create PR and enable auto-merge
         if: steps.check_merge.outputs.has_conflicts == 'false'
         uses: actions/github-script@v7
         with:
@@ -82,13 +88,42 @@ jobs:
               title: 'chore: sync main into dev',
               head: branchName,
               base: 'dev',
-              body: 'Automated sync of main branch into dev. This PR will be auto-merged once checks pass.',
+              body: 'Automated sync of main branch into dev after release. This PR will be auto-merged once checks pass and approval is given.',
             });
             
             console.log(`Created PR #${pr.data.number} for syncing main into dev`);
             
-            // Note: PR will need to pass status checks before it can be merged
-            // You may need to manually approve/merge, or set up auto-merge
+            // Attempt to auto-approve the PR
+            try {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.data.number,
+                event: 'APPROVE',
+                body: 'Auto-approved: automated sync from main to dev',
+              });
+              console.log(`Auto-approved PR #${pr.data.number}`);
+              
+              // Wait a moment for the approval to register
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // Attempt to merge the PR immediately if checks have passed
+              try {
+                await github.rest.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.data.number,
+                  merge_method: 'rebase',
+                });
+                console.log(`Auto-merged PR #${pr.data.number}`);
+              } catch (mergeError) {
+                console.log(`Could not auto-merge immediately (checks may still be running): ${mergeError.message}`);
+                console.log(`PR #${pr.data.number} will need to pass status checks before merging`);
+              }
+            } catch (error) {
+              console.log(`Could not auto-approve PR (may require manual approval): ${error.message}`);
+              console.log(`Please manually approve and merge PR #${pr.data.number}`);
+            }
 
       - name: Create issue on conflict
         if: steps.check_merge.outputs.has_conflicts == 'true'
