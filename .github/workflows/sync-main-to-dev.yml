@@ -1,0 +1,54 @@
+name: Sync Main to Dev
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Only run if the push was a merge (not a direct push to main)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for proper merging
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout dev branch
+        run: git checkout dev
+
+      - name: Pull latest dev
+        run: git pull origin dev
+
+      - name: Merge main into dev
+        run: |
+          git merge origin/main --no-edit -m "chore: sync main into dev"
+        continue-on-error: true
+
+      - name: Push to dev
+        if: success()
+        run: git push origin dev
+
+      - name: Create issue on conflict
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Merge conflict: main → dev sync failed',
+              body: 'The automatic sync from main to dev failed due to merge conflicts. Please manually merge main into dev.',
+              labels: ['bug', 'automation']
+            });
+
