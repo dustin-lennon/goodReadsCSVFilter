@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.1...v1.0.2) (2025-12-06)
+
+
+### Bug Fixes
+
+* run lint/test in sync workflow and report check status to PR ([371d28f](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/371d28ff922fef12045b75c39ac6b149afdbf4ad))
+
 ## [1.0.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.0...v1.0.1) (2025-12-06)
 
 
