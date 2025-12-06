@@ -31,16 +31,29 @@ jobs:
         run: git pull origin dev
 
       - name: Merge main into dev
+        id: merge
+        continue-on-error: true
         run: |
           git merge origin/main --no-edit -m "chore: sync main into dev"
-        continue-on-error: true
+
+      - name: Check merge result
+        id: check_merge
+        run: |
+          # Check if merge has conflicts by looking for unmerged files
+          if [ -n "$(git ls-files -u 2>/dev/null)" ] || [ -f .git/MERGE_HEAD ]; then
+            echo "has_conflicts=true" >> $GITHUB_OUTPUT
+            echo "Merge conflict detected"
+          else
+            echo "has_conflicts=false" >> $GITHUB_OUTPUT
+            echo "Merge successful"
+          fi
 
       - name: Push to dev
-        if: success()
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         run: git push origin dev
 
       - name: Create issue on conflict
-        if: failure()
+        if: steps.check_merge.outputs.has_conflicts == 'true'
         uses: actions/github-script@v7
         with:
           script: |
