@@ -63,7 +63,11 @@ jobs:
       - name: List built files
         run: |
           echo "Files in dist-executable:"
-          dir dist-executable || echo "No dist-executable directory found"
+          if (Test-Path dist-executable) {
+            dir dist-executable
+          } else {
+            echo "No dist-executable directory found"
+          }
 
       - name: Upload Windows artifacts to release
         uses: softprops/action-gh-release@v2
