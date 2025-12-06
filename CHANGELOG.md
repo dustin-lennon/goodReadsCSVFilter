@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.5...v1.0.6) (2025-12-06)
+
+
+### Bug Fixes
+
+* handle missing dist-executable directory in Windows build workflow ([d50472c](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/d50472c620f9dfc5672ea9e0da6653501261b8b4))
+
 ## [1.0.5](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.4...v1.0.5) (2025-12-06)
 
 
