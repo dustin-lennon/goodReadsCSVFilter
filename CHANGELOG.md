@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.2...v1.0.3) (2025-12-06)
+
+
+### Bug Fixes
+
+* exclude tests from build and improve executable build workflow ([e1199e6](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/e1199e67db67175329e63baeae69e9a9b77bf4a9))
+
 ## [1.0.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.1...v1.0.2) (2025-12-06)
 
 
