@@ -1,7 +1,7 @@
 import path from 'path';
 import { GoogleSheetsService } from '../services/GoogleSheetsService';
 import { GoodreadsCSVService } from '../services/GoodreadsCSVService';
-import { BookWeightingService } from '../services/ToReadSeriesService';
+import { BookWeightingService } from '../services/BookWeightingService';
 import { selectCSVFile } from '../gui/launchFileDialog';
 
 /**

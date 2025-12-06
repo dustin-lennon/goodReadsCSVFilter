@@ -1,5 +1,5 @@
 import { GoodreadsCSVService } from '../../src/services/GoodreadsCSVService';
-import { BookWeightingService } from '../../src/services/ToReadSeriesService';
+import { BookWeightingService } from '../../src/services/BookWeightingService';
 import { ShelfType, WeightedBook } from '../../src/core/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
