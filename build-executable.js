@@ -26,9 +26,11 @@ if (missingFiles.length > 0) {
 }
 
 console.log('🔨 Building executable...');
+// Use shell: true to ensure pnpm is found in PATH (especially on Windows in CI)
 const buildProcess = spawn('pnpm', ['run', 'build:executable'], {
     stdio: 'inherit',
-    cwd: process.cwd()
+    cwd: process.cwd(),
+    shell: true
 });
 
 buildProcess.on('close', (code) => {
