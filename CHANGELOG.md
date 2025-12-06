@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.4...v1.0.5) (2025-12-06)
+
+
+### Bug Fixes
+
+* explicitly report CI / lint-test check status to match Ruleset requirement ([c75d2ac](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/c75d2acd9c8ee5d3abf1bddb14fb9584c4656f05))
+
 ## [1.0.4](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.3...v1.0.4) (2025-12-06)
 
 
