@@ -12,5 +12,5 @@
             "*": ["types/*"]
         }
     },
-    "include": ["src", "types"]
+    "include": ["src", "types", "tests"]
 }
