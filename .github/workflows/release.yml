@@ -10,10 +10,17 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: release
+    permissions:
+      contents: write  # Required for semantic-release to push tags and create releases
+      issues: write     # Required for semantic-release to create issues on failure
+      pull-requests: write  # Required for semantic-release
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
