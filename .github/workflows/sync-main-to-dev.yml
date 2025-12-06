@@ -1,0 +1,77 @@
+name: Sync Main to Dev
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push to dev branch
+      issues: write     # Required to create issues on merge conflicts
+    # Only run if the push was a merge (not a direct push to main)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for proper merging
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout dev branch
+        run: git checkout dev
+
+      - name: Pull latest dev
+        run: git pull origin dev
+
+      - name: Merge main into dev
+        id: merge
+        continue-on-error: true
+        run: |
+          set +e
+          git merge origin/main --no-edit -m "chore: sync main into dev"
+          merge_exit_code=$?
+          set -e
+          echo "merge_exit_code=$merge_exit_code" >> $GITHUB_OUTPUT
+
+      - name: Check merge result
+        id: check_merge
+        run: |
+          # Check if merge has conflicts using exit code and unmerged files
+          merge_failed="${{ steps.merge.outputs.merge_exit_code }}"
+          has_unmerged=$(git ls-files -u 2>/dev/null | wc -l)
+          
+          if [ "$merge_failed" != "0" ] || [ "$has_unmerged" -gt 0 ]; then
+            echo "has_conflicts=true" >> $GITHUB_OUTPUT
+            echo "Merge conflict detected"
+          else
+            echo "has_conflicts=false" >> $GITHUB_OUTPUT
+            echo "Merge successful"
+          fi
+
+      - name: Push to dev
+        if: steps.check_merge.outputs.has_conflicts == 'false'
+        run: git push origin dev
+
+      - name: Create issue on conflict
+        if: steps.check_merge.outputs.has_conflicts == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Merge conflict: main → dev sync failed',
+              body: 'The automatic sync from main to dev failed due to merge conflicts. Please manually merge main into dev.',
+              labels: ['bug', 'automation']
+            });
+

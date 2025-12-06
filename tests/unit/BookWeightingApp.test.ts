@@ -1,10 +1,10 @@
 import { GoodreadsCSVService } from '../../src/services/GoodreadsCSVService';
-import { BookWeightingService } from '../../src/services/ToReadSeriesService';
+import { BookWeightingService } from '../../src/services/BookWeightingService';
 import { Book, WeightedBook } from '../../src/core/types';
 
 // Mock the services
 jest.mock('../../src/services/GoodreadsCSVService');
-jest.mock('../../src/services/ToReadSeriesService');
+jest.mock('../../src/services/BookWeightingService');
 
 // Mock the problematic external dependencies
 jest.mock('../../src/services/GoogleSheetsService', () => ({
@@ -112,10 +112,11 @@ describe('BookWeightingApp', () => {
       selectCSVFile.mockReturnValue('/fake/path.csv');
       mockGetToReadBooks.mockRejectedValue(mockError);
 
-      // Mock process.exit to prevent actual exit
+      // Mock process.exit to prevent actual exit but allow execution to continue
       const mockExit = jest.spyOn(process, 'exit').mockImplementation();
 
-      await BookWeightingApp.run();
+      // The function will throw after process.exit when exit is mocked
+      await expect(BookWeightingApp.run()).rejects.toThrow('CSV file not found');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '❌ An unexpected error occurred:',

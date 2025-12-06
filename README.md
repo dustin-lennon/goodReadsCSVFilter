@@ -65,7 +65,7 @@ src/
 ├── services/              # Business logic services
 │   ├── GoodreadsCSVService.ts    # CSV reading and filtering
 │   ├── ActiveSeriesService.ts    # Active series detection
-│   ├── ToReadSeriesService.ts    # Series continuation weighting (BookWeightingService)
+│   ├── BookWeightingService.ts   # Series continuation weighting
 │   └── GoogleSheetsService.ts    # Google Sheets integration
 ├── utils/                 # Utility functions
 ├── gui/                   # File dialog components
