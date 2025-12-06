@@ -35,6 +35,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist-executable/*.dmg
+          tag: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: false
@@ -73,6 +74,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist-executable/*.exe
+          tag: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: false
