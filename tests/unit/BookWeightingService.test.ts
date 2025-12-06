@@ -1,4 +1,4 @@
-import { BookWeightingService } from '../../src/services/ToReadSeriesService';
+import { BookWeightingService } from '../../src/services/BookWeightingService';
 
 // Mock the ActiveSeriesService
 jest.mock('../../src/services/ActiveSeriesService', () => ({

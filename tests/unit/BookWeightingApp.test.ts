@@ -1,10 +1,10 @@
 import { GoodreadsCSVService } from '../../src/services/GoodreadsCSVService';
-import { BookWeightingService } from '../../src/services/ToReadSeriesService';
+import { BookWeightingService } from '../../src/services/BookWeightingService';
 import { Book, WeightedBook } from '../../src/core/types';
 
 // Mock the services
 jest.mock('../../src/services/GoodreadsCSVService');
-jest.mock('../../src/services/ToReadSeriesService');
+jest.mock('../../src/services/BookWeightingService');
 
 // Mock the problematic external dependencies
 jest.mock('../../src/services/GoogleSheetsService', () => ({
