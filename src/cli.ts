@@ -1,10 +1,10 @@
 import { BookWeightingApp } from './core/BookWeightingApp';
+import { handleError } from './utils/errorHandler';
 
 async function main() {
   await BookWeightingApp.run();
 }
 
 main().catch((error) => {
-  console.error('❌ Application crashed:', error);
-  process.exit(1);
+  handleError(error, { exitOnError: true });
 });
