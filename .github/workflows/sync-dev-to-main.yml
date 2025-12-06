@@ -1,0 +1,54 @@
+name: Sync Dev to Main (Reset Dev)
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  reset-dev:
+    runs-on: ubuntu-latest
+    # Only run if PR was merged (not just closed) and it was from dev to main
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'dev' &&
+      github.event.pull_request.base.ref == 'main'
+    permissions:
+      contents: write  # Required to push to dev branch
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Reset dev to match main
+        run: |
+          git fetch origin main dev
+          
+          # Check if dev is already up to date with main
+          if git merge-base --is-ancestor origin/main origin/dev; then
+            echo "✅ Dev is already up to date with main (or ahead)"
+            exit 0
+          fi
+          
+          # Checkout dev
+          git checkout dev
+          git pull origin dev
+          
+          # Reset dev to match main exactly
+          git reset --hard origin/main
+          
+          # Force push to update dev (this is safe since we're resetting to main)
+          git push origin dev --force-with-lease
+          
+          echo "✅ Successfully reset dev branch to match main"
+
