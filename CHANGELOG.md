@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.0...v1.0.1) (2025-12-06)
+
+
+### Bug Fixes
+
+* add workflow_dispatch to CI workflow for manual triggering ([3dd529f](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/3dd529fa94a39a9a9ec5a0429ac1ce9fc2ef9b86))
+
 # 1.0.0 (2025-12-06)
 
 
