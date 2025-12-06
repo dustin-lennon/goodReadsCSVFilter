@@ -3,6 +3,7 @@ import { GoogleSheetsService } from '../services/GoogleSheetsService';
 import { GoodreadsCSVService } from '../services/GoodreadsCSVService';
 import { BookWeightingService } from '../services/BookWeightingService';
 import { selectCSVFile } from '../gui/launchFileDialog';
+import { handleError } from '../utils/errorHandler';
 
 /**
  * Main application orchestrator
@@ -64,15 +65,7 @@ export class BookWeightingApp {
       console.log(`  • Google Sheet: https://docs.google.com/spreadsheets/d/${sheetId}`);
       console.log('\n🎯 Your book selection wheel now prioritizes series continuations!');
     } catch (error) {
-      if (error instanceof Error) {
-        console.error('❌ An unexpected error occurred:', error.message);
-        if (error.stack) {
-          console.error('Stack trace:', error.stack);
-        }
-      } else {
-        console.error('❌ An unexpected error occurred:', error);
-      }
-      process.exit(1);
+      handleError(error, { exitOnError: true });
     }
   }
 
@@ -128,12 +121,7 @@ export class BookWeightingApp {
         sheetUrl: `https://docs.google.com/spreadsheets/d/${sheetId}`,
       };
     } catch (error) {
-      if (error instanceof Error) {
-        progressCallback?.(`❌ Error: ${error.message}`);
-        throw error;
-      }
-      progressCallback?.('❌ Unknown error occurred');
-      throw error;
+      handleError(error, { progressCallback, logStack: false });
     }
   }
 }
