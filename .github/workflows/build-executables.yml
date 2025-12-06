@@ -26,12 +26,18 @@ jobs:
       - name: Build macOS executable
         run: node build-executable.js
 
+      - name: List built files
+        run: |
+          echo "Files in dist-executable:"
+          ls -lah dist-executable/ || echo "No dist-executable directory found"
+
       - name: Upload macOS artifacts to release
         uses: softprops/action-gh-release@v2
         with:
           files: dist-executable/*.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
 
   build-windows:
     runs-on: windows-latest
@@ -54,12 +60,18 @@ jobs:
       - name: Build Windows executable
         run: node build-executable.js
 
+      - name: List built files
+        run: |
+          echo "Files in dist-executable:"
+          dir dist-executable || echo "No dist-executable directory found"
+
       - name: Upload Windows artifacts to release
         uses: softprops/action-gh-release@v2
         with:
           files: dist-executable/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
 
 
 
