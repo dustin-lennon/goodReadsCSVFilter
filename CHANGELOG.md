@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.1.1...v1.1.2) (2025-12-07)
+
+
+### Bug Fixes
+
+* remove unused [@ts-expect-error](https://github.com/ts-expect-error) directives in pathResolver ([1fce2b1](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1fce2b1e905950292d0d93282dc7f34fca777994))
+
 ## [1.1.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.1.0...v1.1.1) (2025-12-07)
 
 
