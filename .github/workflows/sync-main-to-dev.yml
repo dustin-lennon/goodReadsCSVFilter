@@ -16,6 +16,7 @@ jobs:
       contents: write   # Required to create branches and PRs
       pull-requests: write  # Required to create and merge PRs
       issues: write     # Required to create issues on merge conflicts
+      checks: write     # Required to create check runs
     # Only run if the release workflow succeeded, or if manually triggered
     if: (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') || github.event_name == 'workflow_dispatch'
 
