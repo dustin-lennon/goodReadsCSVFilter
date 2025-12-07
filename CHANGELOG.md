@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.1.0...v1.1.1) (2025-12-07)
+
+
+### Bug Fixes
+
+* remove duplicate 'with' key and add workflow_dispatch to build-executables ([5869888](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/586988871b71d170dba06faaf3734a5d3520d974))
+
 # [1.1.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.8...v1.1.0) (2025-12-07)
 
 
