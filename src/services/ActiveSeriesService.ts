@@ -1,13 +1,15 @@
 import { Book, ActiveSeries } from '../core/types';
 import { SeriesDetector } from '../core/SeriesDetector';
 import { GoodreadsCSVService } from './GoodreadsCSVService';
+import { SeriesProgressionTimelineService } from './SeriesProgressionTimelineService';
+import { BookProgressStatus } from '../core/types';
 
 /**
  * Service for detecting active series based on currently reading and reading-next books
  */
 export class ActiveSeriesService {
   /**
-   * Detect active series from currently-reading, reading-next, and recently read books
+   * Detect active series from currently-reading, reading-next, recently read books, and incomplete series
    */
   static async detectActiveSeries(csvFilePath: string): Promise<ActiveSeries[]> {
     const currentlyReading = await GoodreadsCSVService.getCurrentlyReadingBooks(csvFilePath);
@@ -86,6 +88,69 @@ export class ActiveSeriesService {
             currentBookNumber: seriesInfo.bookNumber,
             normalizedAuthor: SeriesDetector.normalizeAuthor(book.Author),
           });
+        }
+      }
+    }
+
+    // Also detect active series from incomplete series (have some books read, some to-read)
+    // This catches series like Rizzoli & Isles where you've read books 1-7 and have 8-13 to read
+    const timeline = await SeriesProgressionTimelineService.generateTimeline(csvFilePath);
+
+    for (const series of timeline.series) {
+      // Only consider incomplete series (have books to read)
+      if (series.booksToRead > 0 || series.booksInProgress > 0) {
+        // Check if this series is already tracked
+        const existing = activeSeries.find(
+          (s) =>
+            s.seriesName.toLowerCase() === series.seriesName.toLowerCase() &&
+            s.normalizedAuthor === series.normalizedAuthor,
+        );
+
+        if (!existing) {
+          // Find the highest book number that has been read
+          const readBooks = series.books
+            .filter((b) => b.status === BookProgressStatus.READ)
+            .sort((a, b) => b.bookNumber - a.bookNumber);
+
+          if (readBooks.length > 0) {
+            const highestReadBook = readBooks[0];
+            activeSeries.push({
+              seriesName: series.seriesName,
+              author: series.author,
+              currentBook: highestReadBook.title,
+              currentBookNumber: highestReadBook.bookNumber,
+              normalizedAuthor: series.normalizedAuthor,
+            });
+          } else if (series.currentBookNumber) {
+            // Use current book number if available (currently-reading or reading-next)
+            const currentBook = series.books.find(
+              (b) =>
+                b.status === BookProgressStatus.CURRENTLY_READING ||
+                b.status === BookProgressStatus.READING_NEXT,
+            );
+            if (currentBook) {
+              activeSeries.push({
+                seriesName: series.seriesName,
+                author: series.author,
+                currentBook: currentBook.title,
+                currentBookNumber: currentBook.bookNumber,
+                normalizedAuthor: series.normalizedAuthor,
+              });
+            }
+          }
+        } else {
+          // Update to the highest book number if this series has a higher one
+          const readBooks = series.books
+            .filter((b) => b.status === BookProgressStatus.READ)
+            .sort((a, b) => b.bookNumber - a.bookNumber);
+
+          if (readBooks.length > 0) {
+            const highestReadBook = readBooks[0];
+            if (highestReadBook.bookNumber > existing.currentBookNumber) {
+              existing.currentBook = highestReadBook.title;
+              existing.currentBookNumber = highestReadBook.bookNumber;
+            }
+          }
         }
       }
     }

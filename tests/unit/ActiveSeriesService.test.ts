@@ -4,6 +4,17 @@ import { Book } from '../../src/core/types';
 
 // Mock the GoodreadsCSVService
 jest.mock('../../src/services/GoodreadsCSVService');
+// Mock the SeriesProgressionTimelineService
+jest.mock('../../src/services/SeriesProgressionTimelineService', () => ({
+  SeriesProgressionTimelineService: {
+    generateTimeline: jest.fn().mockResolvedValue({
+      series: [],
+      totalSeries: 0,
+      totalBooksRead: 0,
+      totalBooksInProgress: 0,
+    }),
+  },
+}));
 
 describe('ActiveSeriesService', () => {
   const mockGetCurrentlyReadingBooks =
@@ -21,6 +32,16 @@ describe('ActiveSeriesService', () => {
     jest.clearAllMocks();
     // Default empty read books for tests that don't need them
     mockGetReadBooks.mockResolvedValue([]);
+    // Default empty timeline for tests that don't need it
+    const {
+      SeriesProgressionTimelineService,
+    } = require('../../src/services/SeriesProgressionTimelineService');
+    SeriesProgressionTimelineService.generateTimeline.mockResolvedValue({
+      series: [],
+      totalSeries: 0,
+      totalBooksRead: 0,
+      totalBooksInProgress: 0,
+    });
   });
 
   describe('detectActiveSeries', () => {
