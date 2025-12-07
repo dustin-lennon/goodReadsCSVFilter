@@ -16,11 +16,12 @@ jobs:
         if: github.event.pull_request.merged == true
         run: echo "✅ PR was merged. Checking branch name..."
 
-      - name: Delete `feature/*`, `hotfix/*`, and `bugfix/*` branches
+      - name: Delete `feature/*`, `hotfix/*`, `fix/*`, and `bugfix/*` branches
         if: github.event.pull_request.merged == true &&
           (startsWith(github.event.pull_request.head.ref, 'feature/') ||
            startsWith(github.event.pull_request.head.ref, 'hotfix/') ||
-           startsWith(github.event.pull_request.head.ref, 'bugfix/'))
+           startsWith(github.event.pull_request.head.ref, 'bugfix/')) ||
+           startsWith(github.event.pull_request.head.ref, 'fix/'))
         env:
           BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
           GITHUB_REPO: ${{ github.repository }}

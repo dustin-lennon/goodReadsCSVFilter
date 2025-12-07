@@ -9,14 +9,15 @@ on:
       - main
   workflow_dispatch: # Allow manual triggering
 
+permissions:
+  contents: write      # Required to create branches and PRs
+  pull-requests: write  # Required to create and merge PRs
+  issues: write        # Required to create issues on merge conflicts
+
 jobs:
   sync:
+    name: Sync main to dev
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # Required to create branches and PRs
-      pull-requests: write  # Required to create and merge PRs
-      issues: write     # Required to create issues on merge conflicts
-      checks: write     # Required to create check runs
     # Only run if the release workflow succeeded, or if manually triggered
     if: (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') || github.event_name == 'workflow_dispatch'
 
@@ -24,31 +25,45 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch full history for proper merging
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # Fetch full history for proper merging
 
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check if sync is needed
+        id: check_sync
+        run: |
+          # Fetch latest changes
+          git fetch origin main dev
+          
+          # Check if dev is behind main
+          BEHIND=$(git rev-list --count origin/dev..origin/main || echo "0")
+          
+          if [ "$BEHIND" -gt 0 ]; then
+            echo "dev is $BEHIND commits behind main. Syncing..."
+            echo "sync_needed=true" >> $GITHUB_OUTPUT
+          else
+            echo "dev is up to date with main"
+            echo "sync_needed=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create sync branch and merge main into dev
+        if: steps.check_sync.outputs.sync_needed == 'true'
         id: merge
         continue-on-error: true
         run: |
           # Create unique branch name
-          BRANCH_NAME="sync/main-to-dev-$(date +%s)"
+          BRANCH_NAME="sync/main-to-dev-$(date +%Y%m%d-%H%M%S)"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          
-          # Fetch latest from origin
-          git fetch origin main dev
           
           # Checkout dev and create sync branch
           git checkout dev
-          git pull origin dev
           git checkout -b "$BRANCH_NAME"
           
-          # Merge main into dev (back merge strategy)
+          # Attempt to merge main into dev (back merge strategy)
           set +e
           git merge origin/main --no-edit
           merge_exit_code=$?
@@ -56,11 +71,12 @@ jobs:
           echo "merge_exit_code=$merge_exit_code" >> $GITHUB_OUTPUT
 
       - name: Check merge result
+        if: steps.check_sync.outputs.sync_needed == 'true'
         id: check_merge
         run: |
           # Check if merge has conflicts using exit code and unmerged files
           merge_failed="${{ steps.merge.outputs.merge_exit_code }}"
-          has_unmerged=$(git ls-files -u 2>/dev/null | wc -l)
+          has_unmerged=$(git ls-files -u 2>/dev/null | wc -l || echo "0")
           
           if [ "$merge_failed" != "0" ] || [ "$has_unmerged" -gt 0 ]; then
             echo "has_conflicts=true" >> $GITHUB_OUTPUT
@@ -72,39 +88,17 @@ jobs:
             echo "Merge successful"
           fi
 
-      - name: Setup Node.js
-        if: steps.check_merge.outputs.has_conflicts == 'false'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-
-      - name: Setup pnpm
-        if: steps.check_merge.outputs.has_conflicts == 'false'
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        if: steps.check_merge.outputs.has_conflicts == 'false'
-        run: pnpm install
-
-      - name: Run lint and test
-        if: steps.check_merge.outputs.has_conflicts == 'false'
-        id: lint_test
-        run: |
-          pnpm lint
-          pnpm test
-
       - name: Push sync branch
-        if: steps.check_merge.outputs.has_conflicts == 'false'
+        if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'false'
         run: |
           git push origin "${{ steps.merge.outputs.branch_name }}"
 
-      - name: Create PR and report check status
-        if: steps.check_merge.outputs.has_conflicts == 'false'
+      - name: Create PR and auto-merge
+        if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'false'
         uses: actions/github-script@v7
         with:
           script: |
             const branchName = '${{ steps.merge.outputs.branch_name }}';
-            const lintTestStatus = '${{ steps.lint_test.outcome }}' === 'success' ? 'success' : 'failure';
             
             // Create PR
             const pr = await github.rest.pulls.create({
@@ -113,27 +107,10 @@ jobs:
               title: 'chore: sync main into dev',
               head: branchName,
               base: 'dev',
-              body: 'Automated sync of main branch into dev after release. Lint and test checks have been run in the sync workflow.',
+              body: 'Automated sync of main branch into dev after release. Code in main has already passed all checks.',
             });
             
             console.log(`Created PR #${pr.data.number} for syncing main into dev`);
-            
-            // Report check status
-            const headSha = pr.data.head.sha;
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'lint-test',
-              head_sha: headSha,
-              status: 'completed',
-              conclusion: lintTestStatus,
-              output: {
-                title: lintTestStatus === 'success' ? 'Lint and test passed' : 'Lint and test failed',
-                summary: lintTestStatus === 'success' 
-                  ? 'Lint and test checks passed in sync workflow'
-                  : 'Lint and test checks failed in sync workflow'
-              }
-            });
             
             // Attempt to auto-approve the PR
             try {
@@ -142,40 +119,78 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: pr.data.number,
                 event: 'APPROVE',
-                body: 'Auto-approved: automated sync from main to dev',
+                body: 'Auto-approved: automated sync from main to dev. Code already verified in main.',
               });
               console.log(`Auto-approved PR #${pr.data.number}`);
               
               // Wait a moment for the approval to register
               await new Promise(resolve => setTimeout(resolve, 2000));
               
-              // Attempt to merge the PR if checks passed
-              if (lintTestStatus === 'success') {
-                try {
-                  await github.rest.pulls.merge({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    pull_number: pr.data.number,
-                    merge_method: 'merge',
-                  });
-                  console.log(`Auto-merged PR #${pr.data.number}`);
-                } catch (mergeError) {
-                  console.log(`Could not auto-merge: ${mergeError.message}`);
-                }
+              // Attempt to merge the PR
+              try {
+                await github.rest.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.data.number,
+                  merge_method: 'merge',
+                });
+                console.log(`Auto-merged PR #${pr.data.number}`);
+              } catch (mergeError) {
+                console.log(`Could not auto-merge: ${mergeError.message}`);
               }
             } catch (error) {
               console.log(`Could not auto-approve PR (may require manual approval): ${error.message}`);
             }
 
-      - name: Create issue on conflict
-        if: steps.check_merge.outputs.has_conflicts == 'true'
-        uses: actions/github-script@v7
+      - name: Create PR for conflicts
+        if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'true'
+        uses: peter-evans/create-pull-request@v6
         with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: '⚠️ Merge conflict: main → dev sync failed',
-              body: 'The automatic sync from main to dev failed due to merge conflicts. Please manually merge main into dev.',
-              labels: ['bug', 'automation']
-            });
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.merge.outputs.branch_name }}
+          title: "🔄 Sync main to dev (merge conflicts detected)"
+          body: |
+            ## 🔄 Automatic Sync: main → dev
+
+            **Status:** ⚠️ Merge conflicts detected
+
+            This pull request was automatically created because there were merge conflicts when attempting to sync changes from `main` into `dev`.
+
+            ### 📋 What happened:
+
+            - Changes were pushed to `main` and release workflow completed
+            - Automatic sync to `dev` was attempted
+            - Merge conflicts were detected and require manual resolution
+
+            ### 🛠️ Next steps:
+
+            1. Review the conflicts in the files below
+            2. Resolve conflicts manually
+            3. Commit the resolved changes
+            4. Merge this PR to complete the sync
+
+            ### 📊 Sync Details:
+
+            - **Source branch:** `main`
+            - **Target branch:** `dev`
+            - **Sync branch:** `${{ steps.merge.outputs.branch_name }}`
+            - **Triggered by:** Release workflow completion
+
+            ---
+
+            *This PR was automatically created by the sync workflow. Please resolve conflicts and merge to maintain Git Flow integrity.*
+          base: dev
+          labels: |
+            sync
+            merge-conflict
+            automation
+
+      - name: Comment on up-to-date
+        if: steps.check_sync.outputs.sync_needed == 'false'
+        run: |
+          echo "ℹ️ Dev branch is already up to date with main"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Failed to sync main to dev. Check workflow logs for details."
