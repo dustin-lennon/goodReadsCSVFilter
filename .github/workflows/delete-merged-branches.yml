@@ -1,0 +1,41 @@
+name: Delete Merged Feature, Hotfix, and Bugfix Branches
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-merged-branches:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    
+    steps:
+      - name: Check if PR was merged
+        if: github.event.pull_request.merged == true
+        run: echo "✅ PR was merged. Checking branch name..."
+
+      - name: Delete `feature/*`, `hotfix/*`, and `bugfix/*` branches
+        if: github.event.pull_request.merged == true &&
+          (startsWith(github.event.pull_request.head.ref, 'feature/') ||
+           startsWith(github.event.pull_request.head.ref, 'hotfix/') ||
+           startsWith(github.event.pull_request.head.ref, 'bugfix/'))
+        env:
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          echo "🚀 Attempting to delete branch: \"$BRANCH_NAME\""
+          
+          # Additional safety check: never delete dev or main
+          if [ "$BRANCH_NAME" = "dev" ] || [ "$BRANCH_NAME" = "main" ]; then
+            echo "❌ Safety check: Refusing to delete protected branch: $BRANCH_NAME"
+            exit 0
+          fi
+          
+          curl -X DELETE \
+               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github+json" \
+               "https://api.github.com/repos/$GITHUB_REPO/git/refs/heads/$BRANCH_NAME" || true
+          
+          echo "✅ Branch deletion attempted for: $BRANCH_NAME"
