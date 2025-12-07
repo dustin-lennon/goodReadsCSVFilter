@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as path from 'path';
 import { BookWeightingApp } from '../core/BookWeightingApp';
+import { SeriesProgressionTimelineService } from '../services/SeriesProgressionTimelineService';
 
 class ElectronApp {
   private mainWindow: BrowserWindow | null = null;
@@ -111,6 +112,22 @@ class ElectronApp {
     ipcMain.handle('open-sheets-url', async (_event, url: string) => {
       const { shell } = require('electron');
       await shell.openExternal(url);
+    });
+
+    // Handle timeline generation
+    ipcMain.handle('generate-timeline', async (_event, csvFilePath: string) => {
+      try {
+        const timeline = await SeriesProgressionTimelineService.generateTimeline(csvFilePath);
+        return {
+          success: true,
+          timeline,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+        };
+      }
     });
   }
 }

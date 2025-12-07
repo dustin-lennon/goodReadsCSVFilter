@@ -14,6 +14,17 @@ jest.mock('../../src/services/GoogleSheetsService', () => ({
   },
 }));
 
+jest.mock('../../src/services/SeriesProgressionTimelineService', () => ({
+  SeriesProgressionTimelineService: {
+    generateTimeline: jest.fn().mockResolvedValue({
+      series: [],
+      totalSeries: 0,
+      totalBooksRead: 0,
+      totalBooksInProgress: 0,
+    }),
+  },
+}));
+
 jest.mock('../../src/gui/launchFileDialog', () => ({
   selectCSVFile: jest.fn().mockReturnValue('/mock/path/to/file.csv'),
 }));
@@ -21,6 +32,9 @@ jest.mock('../../src/gui/launchFileDialog', () => ({
 // Import the mocked modules
 const { GoogleSheetsService } = require('../../src/services/GoogleSheetsService');
 const { selectCSVFile } = require('../../src/gui/launchFileDialog');
+const {
+  SeriesProgressionTimelineService,
+} = require('../../src/services/SeriesProgressionTimelineService');
 
 // Mock console methods to avoid noise in test output
 const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -38,6 +52,14 @@ describe('BookWeightingApp', () => {
     jest.clearAllMocks();
     consoleSpy.mockClear();
     consoleErrorSpy.mockClear();
+
+    // Reset timeline service mock
+    SeriesProgressionTimelineService.generateTimeline.mockResolvedValue({
+      series: [],
+      totalSeries: 0,
+      totalBooksRead: 0,
+      totalBooksInProgress: 0,
+    });
   });
 
   afterAll(() => {
@@ -84,6 +106,12 @@ describe('BookWeightingApp', () => {
       mockApplyWeights.mockResolvedValue(mockWeightedBooks);
       GoogleSheetsService.getOrCreateSheet.mockResolvedValue('fake-sheet-id');
       GoogleSheetsService.writeWeightedBooksToSheet.mockResolvedValue();
+      SeriesProgressionTimelineService.generateTimeline.mockResolvedValue({
+        series: [],
+        totalSeries: 0,
+        totalBooksRead: 0,
+        totalBooksInProgress: 0,
+      });
 
       // Run the app
       await BookWeightingApp.run();
@@ -97,6 +125,9 @@ describe('BookWeightingApp', () => {
         'fake-sheet-id',
         mockWeightedBooks,
       );
+
+      // Verify timeline was generated
+      expect(SeriesProgressionTimelineService.generateTimeline).toHaveBeenCalled();
 
       // Verify console output includes key information
       expect(consoleSpy).toHaveBeenCalledWith('📚 GoodReads Book Weighting System');
@@ -113,10 +144,12 @@ describe('BookWeightingApp', () => {
       mockGetToReadBooks.mockRejectedValue(mockError);
 
       // Mock process.exit to prevent actual exit but allow execution to continue
-      const mockExit = jest.spyOn(process, 'exit').mockImplementation();
+      const mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {
+        throw new Error('process.exit called');
+      }) as () => never);
 
       // The function will throw after process.exit when exit is mocked
-      await expect(BookWeightingApp.run()).rejects.toThrow('CSV file not found');
+      await expect(BookWeightingApp.run()).rejects.toThrow();
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '❌ An unexpected error occurred:',

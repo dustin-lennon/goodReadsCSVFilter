@@ -1,3 +1,21 @@
+## [Unreleased]
+
+### Features
+
+* add series progression timeline feature with visual display in CLI and GUI
+* enhance active series detection to include incomplete series for better prioritization
+* improve GUI timeline display to show book titles alongside book numbers
+* add intelligent path resolution for resource files in Electron GUI
+
+### Bug Fixes
+
+* fix completion percentage calculation to use total books tracked instead of highest book number
+* fix path resolution for client_secret.json in Electron GUI development mode
+* improve series filtering to exclude completed series from timeline
+* fix book grouping logic to handle gaps and non-sequential book numbers correctly
+* handle books without explicit book numbers in series (e.g., Alex Cross books 1-2)
+* detect missing series books that don't have series information in title (e.g., The Mephisto Club)
+
 ## [1.0.8](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.7...v1.0.8) (2025-12-07)
 
 

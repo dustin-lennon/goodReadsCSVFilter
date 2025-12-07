@@ -1,48 +1,9 @@
-import path from 'path';
 import { google } from 'googleapis';
 import { readFile, writeFile } from 'fs/promises';
 import { authorize } from '../auth';
 import { OAuth2Client } from 'google-auth-library';
 import { WeightedBook } from '../core/types';
-
-// Helper function to get resource paths that work in both development and packaged app
-function getResourcePath(filename: string): string {
-  // Check if we're in a packaged Electron app
-  const isPackaged = process.mainModule?.filename.indexOf('app.asar') !== -1;
-
-  // In development, use current working directory
-  if (process.env.NODE_ENV === 'development' || !isPackaged) {
-    return path.join(process.cwd(), filename);
-  }
-
-  // In packaged app, try to get the app's resource directory
-  try {
-    const { app } = require('electron');
-    if (app && app.getPath) {
-      // Electron packaged app - look in userData directory first, then resources
-      const userDataPath = path.join(app.getPath('userData'), filename);
-      const resourcePath = path.join(process.resourcesPath || '', filename);
-
-      // Try userData first (for user-created files like sheet-id.txt)
-      const fs = require('fs');
-      if (fs.existsSync(userDataPath)) {
-        return userDataPath;
-      }
-      // Fall back to resources (for app-bundled files)
-      if (fs.existsSync(resourcePath)) {
-        return resourcePath;
-      }
-      // If neither exists, return userData path for creation
-      return userDataPath;
-    }
-  } catch {
-    // If electron is not available, fall back
-    console.log('Electron not available, using fallback path');
-  }
-
-  // Fallback to process.cwd()
-  return path.join(process.cwd(), filename);
-}
+import { getResourcePath } from '../utils/pathResolver';
 
 const SHEET_ID_FILE = getResourcePath('sheet-id.txt');
 

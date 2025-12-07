@@ -2,6 +2,8 @@ import path from 'path';
 import { GoogleSheetsService } from '../services/GoogleSheetsService';
 import { GoodreadsCSVService } from '../services/GoodreadsCSVService';
 import { BookWeightingService } from '../services/BookWeightingService';
+import { SeriesProgressionTimelineService } from '../services/SeriesProgressionTimelineService';
+import { TimelineFormatter } from '../utils/timelineFormatter';
 import { selectCSVFile } from '../gui/launchFileDialog';
 import { handleError } from '../utils/errorHandler';
 
@@ -52,6 +54,11 @@ export class BookWeightingApp {
           console.log(`      Reason: ${wb.reason}\n`);
         });
       }
+
+      // Generate and display series progression timeline
+      console.log('\n📈 Generating series progression timeline...');
+      const timeline = await SeriesProgressionTimelineService.generateTimeline(resolvedPath);
+      console.log(TimelineFormatter.formatTimeline(timeline));
 
       // Export to Google Sheets
       console.log('📤 Exporting to Google Sheets...');
@@ -106,6 +113,10 @@ export class BookWeightingApp {
         );
       }
 
+      // Generate series progression timeline
+      progressCallback?.('📈 Generating series progression timeline...');
+      const timeline = await SeriesProgressionTimelineService.generateTimeline(csvFilePath);
+
       // Export to Google Sheets
       progressCallback?.('📤 Exporting to Google Sheets...');
       const sheetId = await GoogleSheetsService.getOrCreateSheet();
@@ -119,6 +130,7 @@ export class BookWeightingApp {
         weightDistribution: weightCounts,
         sheetId: sheetId,
         sheetUrl: `https://docs.google.com/spreadsheets/d/${sheetId}`,
+        timeline: timeline,
       };
     } catch (error) {
       handleError(error, { progressCallback, logStack: false });
