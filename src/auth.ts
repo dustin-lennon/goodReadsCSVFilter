@@ -1,49 +1,10 @@
 import open from 'open';
-import path from 'path';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { readFile, unlink, writeFile } from 'fs/promises';
 import { createServer } from 'http';
 import destroyer from 'server-destroy';
-
-// Helper function to get resource paths that work in both development and packaged app
-function getResourcePath(filename: string): string {
-  // Check if we're in a packaged Electron app
-  const isPackaged = process.mainModule?.filename.indexOf('app.asar') !== -1;
-
-  // In development, use current working directory
-  if (process.env.NODE_ENV === 'development' || !isPackaged) {
-    return path.join(process.cwd(), filename);
-  }
-
-  // In packaged app, try to get the app's resource directory
-  try {
-    const { app } = require('electron');
-    if (app && app.getPath) {
-      // Electron packaged app - look in userData directory first, then resources
-      const userDataPath = path.join(app.getPath('userData'), filename);
-      const resourcePath = path.join(process.resourcesPath || '', filename);
-
-      // Try userData first (for user-created files like token.json)
-      const fs = require('fs');
-      if (fs.existsSync(userDataPath)) {
-        return userDataPath;
-      }
-      // Fall back to resources (for app-bundled files like client_secret.json)
-      if (fs.existsSync(resourcePath)) {
-        return resourcePath;
-      }
-      // If neither exists, return userData path for creation
-      return userDataPath;
-    }
-  } catch {
-    // If electron is not available, fall back
-    console.log('Electron not available, using fallback path');
-  }
-
-  // Fallback to process.cwd()
-  return path.join(process.cwd(), filename);
-}
+import { getResourcePath } from './utils/pathResolver';
 
 const TOKEN_PATH = getResourcePath('token.json');
 const CREDENTIALS_PATH = getResourcePath('client_secret.json');
@@ -80,12 +41,14 @@ The file 'client_secret.json' is required for Google Sheets access.
 4. Download the credentials file as 'client_secret.json'
 5. Place it in: ${CREDENTIALS_PATH}
 
+💡 For GUI development, place it in your project root directory (same folder as package.json).
+
 📖 See SETUP.md for detailed instructions.
         `;
 
     console.error(setupMessage);
     throw new Error(
-      'Google API credentials file (client_secret.json) not found. See SETUP.md for instructions.',
+      `Google API credentials file (client_secret.json) not found at: ${CREDENTIALS_PATH}. See SETUP.md for instructions.`,
     );
   }
 

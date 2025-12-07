@@ -127,6 +127,11 @@ class BookWeightingGUI {
       this.displayHighPriorityBooks(results.highPriorityBooks);
     }
 
+    // Show timeline if available
+    if (results.timeline) {
+      this.displayTimeline(results.timeline);
+    }
+
     // Show Google Sheets button
     if (results.sheetUrl) {
       document.getElementById('openSheetsBtn').classList.remove('hidden');
@@ -156,6 +161,127 @@ class BookWeightingGUI {
     });
 
     section.classList.remove('hidden');
+  }
+
+  displayTimeline(timeline) {
+    const section = document.getElementById('timelineSection');
+    const content = document.getElementById('timelineContent');
+
+    content.innerHTML = '';
+
+    // Overview stats
+    const overviewDiv = document.createElement('div');
+    overviewDiv.style.cssText =
+      'margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px;';
+    overviewDiv.innerHTML = `
+      <strong>📊 Overview:</strong><br>
+      • Total Series: ${timeline.totalSeries}<br>
+      • Books Read: ${timeline.totalBooksRead}<br>
+      • Books In Progress: ${timeline.totalBooksInProgress}
+    `;
+    content.appendChild(overviewDiv);
+
+    if (timeline.series.length === 0) {
+      const noSeriesDiv = document.createElement('div');
+      noSeriesDiv.textContent = 'No series found in your library.';
+      content.appendChild(noSeriesDiv);
+      section.classList.remove('hidden');
+      return;
+    }
+
+    // Display each series
+    timeline.series.forEach((series) => {
+      const seriesDiv = document.createElement('div');
+      seriesDiv.className = 'series-timeline';
+
+      // Series header
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'series-header';
+      headerDiv.textContent = `${series.seriesName} by ${series.author}`;
+      seriesDiv.appendChild(headerDiv);
+
+      // Series stats
+      const statsDiv = document.createElement('div');
+      statsDiv.className = 'series-stats';
+      let statsText = `Progress: ${series.booksRead} read, ${series.booksInProgress} in progress, ${series.booksToRead} to read | `;
+      statsText += `Completion: ${series.completionPercentage.toFixed(1)}%`;
+      if (series.currentBookNumber) {
+        statsText += ` | Currently on: Book #${series.currentBookNumber}`;
+      }
+      if (series.firstReadDate && series.lastReadDate) {
+        const firstDate = series.firstReadDate.toLocaleDateString();
+        const lastDate = series.lastReadDate.toLocaleDateString();
+        if (firstDate === lastDate) {
+          statsText += ` | Date: ${firstDate}`;
+        } else {
+          statsText += ` | Dates: ${firstDate} - ${lastDate}`;
+        }
+      }
+      statsDiv.textContent = statsText;
+      seriesDiv.appendChild(statsDiv);
+
+      // Progress bar
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress-bar';
+      const progressFill = document.createElement('div');
+      progressFill.className = 'progress-fill';
+      progressFill.style.width = `${Math.min(series.completionPercentage, 100)}%`;
+      progressFill.textContent = `${series.completionPercentage.toFixed(1)}%`;
+      progressBar.appendChild(progressFill);
+      seriesDiv.appendChild(progressBar);
+
+      // Book timeline
+      const booksContainer = document.createElement('div');
+      booksContainer.style.marginTop = '10px';
+
+      series.books.forEach((book) => {
+        const bookDiv = document.createElement('div');
+        bookDiv.className = `book-timeline-item ${book.status}`;
+
+        const statusIcon = this.getStatusIcon(book.status);
+        const statusText = this.getStatusText(book.status);
+        const dateStr = book.dateRead ? ` (${book.dateRead.toLocaleDateString()})` : '';
+
+        // Show book number and title
+        bookDiv.innerHTML = `${statusIcon} <strong>Book #${book.bookNumber}:</strong> "${book.title}" - ${statusText}${dateStr}`;
+        booksContainer.appendChild(bookDiv);
+      });
+
+      seriesDiv.appendChild(booksContainer);
+      content.appendChild(seriesDiv);
+    });
+
+    section.classList.remove('hidden');
+  }
+
+  getStatusIcon(status) {
+    switch (status) {
+      case 'read':
+        return '✅';
+      case 'currently-reading':
+        return '📖';
+      case 'reading-next':
+        return '🔜';
+      case 'to-read':
+        return '📚';
+      default:
+        return '⚪';
+    }
+  }
+
+  getStatusText(status) {
+    switch (status) {
+      case 'read':
+        return 'Read';
+      case 'currently-reading':
+        return 'Currently Reading';
+      case 'reading-next':
+        return 'Reading Next';
+      case 'to-read':
+        return 'To Read';
+      default:
+        return 'Not Started';
+    }
   }
 
   activateStep3() {
@@ -193,6 +319,7 @@ class BookWeightingGUI {
     document.getElementById('processing').classList.add('hidden');
     document.getElementById('results').classList.add('hidden');
     document.getElementById('highPrioritySection').classList.add('hidden');
+    document.getElementById('timelineSection').classList.add('hidden');
     document.getElementById('openSheetsBtn').classList.add('hidden');
     document.getElementById('successIcon').classList.add('hidden');
 

@@ -39,3 +39,41 @@ export interface WeightedBook {
   weight: number;
   reason: string;
 }
+
+export enum BookProgressStatus {
+  READ = 'read',
+  CURRENTLY_READING = 'currently-reading',
+  READING_NEXT = 'reading-next',
+  TO_READ = 'to-read',
+  NOT_STARTED = 'not-started',
+}
+
+export interface BookProgress {
+  title: string;
+  bookNumber: number;
+  status: BookProgressStatus;
+  dateRead?: Date;
+  author: string;
+}
+
+export interface SeriesProgress {
+  seriesName: string;
+  author: string;
+  normalizedAuthor: string;
+  books: BookProgress[];
+  highestBookNumber: number;
+  booksRead: number;
+  booksInProgress: number;
+  booksToRead: number;
+  completionPercentage: number;
+  firstReadDate?: Date;
+  lastReadDate?: Date;
+  currentBookNumber?: number;
+}
+
+export interface SeriesProgressionTimeline {
+  series: SeriesProgress[];
+  totalSeries: number;
+  totalBooksRead: number;
+  totalBooksInProgress: number;
+}
