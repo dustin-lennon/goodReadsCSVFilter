@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.6...v1.0.7) (2025-12-07)
+
+
+### Bug Fixes
+
+* add checks:write permission to sync-main-to-dev workflow ([51b62cb](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/51b62cbc0ed33b1726a90fed9953ed4305a36326))
+
 ## [1.0.6](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.5...v1.0.6) (2025-12-06)
 
 
