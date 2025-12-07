@@ -31,8 +31,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create sync branch and rebase onto main
-        id: rebase
+      - name: Create sync branch and merge main into dev
+        id: merge
         continue-on-error: true
         run: |
           # Create unique branch name
@@ -47,62 +47,62 @@ jobs:
           git pull origin dev
           git checkout -b "$BRANCH_NAME"
           
-          # Rebase dev's commits onto main (brings main's changes into dev without merge commits)
+          # Merge main into dev (back merge strategy)
           set +e
-          git rebase origin/main
-          rebase_exit_code=$?
+          git merge origin/main --no-edit
+          merge_exit_code=$?
           set -e
-          echo "rebase_exit_code=$rebase_exit_code" >> $GITHUB_OUTPUT
+          echo "merge_exit_code=$merge_exit_code" >> $GITHUB_OUTPUT
 
-      - name: Check rebase result
-        id: check_rebase
+      - name: Check merge result
+        id: check_merge
         run: |
-          # Check if rebase has conflicts using exit code and unmerged files
-          rebase_failed="${{ steps.rebase.outputs.rebase_exit_code }}"
+          # Check if merge has conflicts using exit code and unmerged files
+          merge_failed="${{ steps.merge.outputs.merge_exit_code }}"
           has_unmerged=$(git ls-files -u 2>/dev/null | wc -l)
           
-          if [ "$rebase_failed" != "0" ] || [ "$has_unmerged" -gt 0 ]; then
+          if [ "$merge_failed" != "0" ] || [ "$has_unmerged" -gt 0 ]; then
             echo "has_conflicts=true" >> $GITHUB_OUTPUT
-            echo "Rebase conflict detected"
-            # Abort rebase to clean up
-            git rebase --abort 2>/dev/null || true
+            echo "Merge conflict detected"
+            # Abort merge to clean up
+            git merge --abort 2>/dev/null || true
           else
             echo "has_conflicts=false" >> $GITHUB_OUTPUT
-            echo "Rebase successful"
+            echo "Merge successful"
           fi
 
       - name: Setup Node.js
-        if: steps.check_rebase.outputs.has_conflicts == 'false'
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
 
       - name: Setup pnpm
-        if: steps.check_rebase.outputs.has_conflicts == 'false'
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         uses: pnpm/action-setup@v4
 
       - name: Install dependencies
-        if: steps.check_rebase.outputs.has_conflicts == 'false'
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         run: pnpm install
 
       - name: Run lint and test
-        if: steps.check_rebase.outputs.has_conflicts == 'false'
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         id: lint_test
         run: |
           pnpm lint
           pnpm test
 
       - name: Push sync branch
-        if: steps.check_rebase.outputs.has_conflicts == 'false'
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         run: |
-          git push origin "${{ steps.rebase.outputs.branch_name }}"
+          git push origin "${{ steps.merge.outputs.branch_name }}"
 
       - name: Create PR and report check status
-        if: steps.check_rebase.outputs.has_conflicts == 'false'
+        if: steps.check_merge.outputs.has_conflicts == 'false'
         uses: actions/github-script@v7
         with:
           script: |
-            const branchName = '${{ steps.rebase.outputs.branch_name }}';
+            const branchName = '${{ steps.merge.outputs.branch_name }}';
             const lintTestStatus = '${{ steps.lint_test.outcome }}' === 'success' ? 'success' : 'failure';
             
             // Create PR
@@ -155,7 +155,7 @@ jobs:
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     pull_number: pr.data.number,
-                    merge_method: 'rebase',
+                    merge_method: 'merge',
                   });
                   console.log(`Auto-merged PR #${pr.data.number}`);
                 } catch (mergeError) {
@@ -167,7 +167,7 @@ jobs:
             }
 
       - name: Create issue on conflict
-        if: steps.check_rebase.outputs.has_conflicts == 'true'
+        if: steps.check_merge.outputs.has_conflicts == 'true'
         uses: actions/github-script@v7
         with:
           script: |
