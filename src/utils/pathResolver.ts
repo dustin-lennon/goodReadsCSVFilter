@@ -66,9 +66,7 @@ export function getResourcePath(filename: string): string {
   if (!projectRoot) {
     // Try from compiled file location (__dirname in CommonJS)
     try {
-      // @ts-expect-error - __dirname is available in CommonJS
       if (typeof __dirname !== 'undefined') {
-        // @ts-expect-error - __dirname is available in CommonJS
         projectRoot = findProjectRoot(__dirname);
       }
     } catch {
