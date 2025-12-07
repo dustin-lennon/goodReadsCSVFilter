@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.8...v1.1.0) (2025-12-07)
+
+
+### Features
+
+* add series progression timeline feature ([e8c7a07](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/e8c7a077f7dd34cd2277b9881bb3b69e9dac4187))
+
 ## [Unreleased]
 
 ### Features
