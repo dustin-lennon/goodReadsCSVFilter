@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.7...v1.0.8) (2025-12-07)
+
+
+### Bug Fixes
+
+* use release tag version and build arm64 for macOS ([f41d93b](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/f41d93bb5b555e4cf7713d9b179d0236cf6da019))
+
 ## [1.0.7](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.0.6...v1.0.7) (2025-12-07)
 
 
