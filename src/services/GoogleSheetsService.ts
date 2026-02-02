@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { readFile, writeFile } from 'fs/promises';
 import { authorize } from '../auth';
 import { OAuth2Client } from 'google-auth-library';
-import { WeightedBook, Book } from '../core/types';
+import { WeightedBook } from '../core/types';
 import { getResourcePath } from '../utils/pathResolver';
 import { SeriesDetector } from '../core/SeriesDetector';
 import { ActiveSeriesService } from './ActiveSeriesService';
@@ -54,7 +54,11 @@ export class GoogleSheetsService {
     return sheetId;
   }
 
-  static async writeWeightedBooksToSheet(sheetId: string, weightedBooks: WeightedBook[], csvFilePath: string) {
+  static async writeWeightedBooksToSheet(
+    sheetId: string,
+    weightedBooks: WeightedBook[],
+    csvFilePath: string,
+  ) {
     const sheets = await this.getSheetsClient();
 
     // Clear existing data from Sheet1
@@ -107,7 +111,11 @@ export class GoogleSheetsService {
    * - Next books in active series (continuation books)
    * - All non-series books (standalone books)
    */
-  static async createCuratedReadingSheet(sheetId: string, weightedBooks: WeightedBook[], csvFilePath: string) {
+  static async createCuratedReadingSheet(
+    sheetId: string,
+    weightedBooks: WeightedBook[],
+    csvFilePath: string,
+  ) {
     const sheets = await this.getSheetsClient();
 
     // Get active series information
@@ -116,7 +124,7 @@ export class GoogleSheetsService {
     // Filter books for curated reading sheet
     const curatedBooks = weightedBooks.filter((wb) => {
       const seriesInfo = SeriesDetector.extractSeriesInfo(wb.book.Title);
-      
+
       // Include all non-series books (standalone books)
       if (!seriesInfo.seriesName) {
         return true;
@@ -128,7 +136,10 @@ export class GoogleSheetsService {
       }
 
       // Include if it's the next book in an active series
-      if (seriesInfo.bookNumber && ActiveSeriesService.isNextInActiveSeries(wb.book, activeSeries)) {
+      if (
+        seriesInfo.bookNumber &&
+        ActiveSeriesService.isNextInActiveSeries(wb.book, activeSeries)
+      ) {
         return true;
       }
 
@@ -143,21 +154,23 @@ export class GoogleSheetsService {
       });
 
       const curatedSheetExists = spreadsheet.data.sheets?.some(
-        sheet => sheet.properties?.title === 'Curated Reading'
+        (sheet) => sheet.properties?.title === 'Curated Reading',
       );
 
       if (!curatedSheetExists) {
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId: sheetId,
           requestBody: {
-            requests: [{
-              addSheet: {
-                properties: {
-                  title: 'Curated Reading',
-                }
-              }
-            }]
-          }
+            requests: [
+              {
+                addSheet: {
+                  properties: {
+                    title: 'Curated Reading',
+                  },
+                },
+              },
+            ],
+          },
         });
         console.log('📋 Created Curated Reading sheet');
       }
@@ -176,7 +189,7 @@ export class GoogleSheetsService {
     const curatedValues = curatedBooks.map((wb) => {
       const titleByAuthor = `${wb.book.Title} by ${wb.book.Author}`;
       const seriesInfo = SeriesDetector.extractSeriesInfo(wb.book.Title);
-      
+
       let bookType = 'Standalone';
       if (seriesInfo.seriesName) {
         if (seriesInfo.bookNumber === 1) {
@@ -185,8 +198,15 @@ export class GoogleSheetsService {
           bookType = 'Next in Series';
         }
       }
-      
-      return [titleByAuthor, seriesInfo.seriesName || '', seriesInfo.bookNumber || '', bookType, wb.weight, wb.reason];
+
+      return [
+        titleByAuthor,
+        seriesInfo.seriesName || '',
+        seriesInfo.bookNumber || '',
+        bookType,
+        wb.weight,
+        wb.reason,
+      ];
     });
 
     // Write to Curated Reading sheet
@@ -196,28 +216,32 @@ export class GoogleSheetsService {
       valueInputOption: 'RAW',
       requestBody: {
         values: [
-          ['Book Title by Author', 'Series Name', 'Book Number', 'Type', 'Weight', 'Reason'], 
-          ...curatedValues
+          ['Book Title by Author', 'Series Name', 'Book Number', 'Type', 'Weight', 'Reason'],
+          ...curatedValues,
         ],
       },
     });
 
     console.log(`📚 Created Curated Reading sheet with ${curatedBooks.length} books:`);
-    
+
     // Log breakdown
-    const standaloneBooks = curatedBooks.filter(wb => {
+    const standaloneBooks = curatedBooks.filter((wb) => {
       const seriesInfo = SeriesDetector.extractSeriesInfo(wb.book.Title);
       return !seriesInfo.seriesName;
     });
-    
-    const firstBooks = curatedBooks.filter(wb => {
+
+    const firstBooks = curatedBooks.filter((wb) => {
       const seriesInfo = SeriesDetector.extractSeriesInfo(wb.book.Title);
       return seriesInfo.bookNumber === 1;
     });
-    
-    const nextBooks = curatedBooks.filter(wb => {
+
+    const nextBooks = curatedBooks.filter((wb) => {
       const seriesInfo = SeriesDetector.extractSeriesInfo(wb.book.Title);
-      return seriesInfo.seriesName && seriesInfo.bookNumber !== 1 && ActiveSeriesService.isNextInActiveSeries(wb.book, activeSeries);
+      return (
+        seriesInfo.seriesName &&
+        seriesInfo.bookNumber !== 1 &&
+        ActiveSeriesService.isNextInActiveSeries(wb.book, activeSeries)
+      );
     });
 
     console.log(`   📖 Standalone books: ${standaloneBooks.length}`);
