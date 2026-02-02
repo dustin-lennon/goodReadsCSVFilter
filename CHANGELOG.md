@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.1.2...v1.2.0) (2026-02-02)
+
+
+### Bug Fixes
+
+* format GoogleSheetsService code ([1dd9d5c](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1dd9d5c25e9737d8f173411e4493bb1b54d8c782))
+
+
+### Features
+
+* add Curated Reading sheet with standalone books and series filtering ([6af90ec](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/6af90ecb205caf584aedd704e24227a6b203cc1f)), closes [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1)
+
 ## [1.1.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.1.1...v1.1.2) (2025-12-07)
 
 
