@@ -124,6 +124,7 @@ describe('BookWeightingApp', () => {
       expect(GoogleSheetsService.writeWeightedBooksToSheet).toHaveBeenCalledWith(
         'fake-sheet-id',
         mockWeightedBooks,
+        expect.stringContaining('file.csv'),
       );
 
       // Verify timeline was generated
