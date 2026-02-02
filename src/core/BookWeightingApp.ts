@@ -63,7 +63,7 @@ export class BookWeightingApp {
       // Export to Google Sheets
       console.log('📤 Exporting to Google Sheets...');
       const sheetId = await GoogleSheetsService.getOrCreateSheet();
-      await GoogleSheetsService.writeWeightedBooksToSheet(sheetId, weightedBooks);
+      await GoogleSheetsService.writeWeightedBooksToSheet(sheetId, weightedBooks, resolvedPath);
 
       console.log('\n✅ Sync complete!');
       console.log('📄 Summary:');
@@ -120,7 +120,7 @@ export class BookWeightingApp {
       // Export to Google Sheets
       progressCallback?.('📤 Exporting to Google Sheets...');
       const sheetId = await GoogleSheetsService.getOrCreateSheet();
-      await GoogleSheetsService.writeWeightedBooksToSheet(sheetId, weightedBooks);
+      await GoogleSheetsService.writeWeightedBooksToSheet(sheetId, weightedBooks, csvFilePath);
 
       progressCallback?.('✅ Sync complete!');
 
