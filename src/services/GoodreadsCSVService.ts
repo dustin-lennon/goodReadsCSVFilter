@@ -82,4 +82,11 @@ export class GoodreadsCSVService {
   static async getReadBooks(filePath: string): Promise<Book[]> {
     return this.getBooksByShelf(filePath, ShelfType.READ);
   }
+
+  /**
+   * Get all books (alias for readAllBooks)
+   */
+  static async getAllBooks(filePath: string): Promise<Book[]> {
+    return this.readAllBooks(filePath);
+  }
 }

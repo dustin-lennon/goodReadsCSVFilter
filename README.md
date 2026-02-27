@@ -10,9 +10,11 @@ A TypeScript application that intelligently weights books from your GoodReads to
 
 - 🧠 **Active Series Detection**: Automatically detects which series you're currently reading or planning to read next
 - ⚖️ **Smart Continuation Weighting**: Prioritizes the **next book** in active series with 5x weight
+- � **Curated Reading Sheet**: Separate sheet with only first books, next-in-series, and standalone books (no middle books)
+- 🎌 **Progressive Series Support**: Handles light novel series where "Progressive" retelling must be read before main series (e.g., Sword Art Online)
 - 📊 **Google Sheets Integration**: Exports weighted book lists for spinner wheels
 - 🔄 **Multi-Shelf Analysis**: Analyzes to-read → currently-reading → reading-next → read for intelligent prioritization
-- ✅ **Test Driven Development**: 100% coverage on core business logic with 34 comprehensive tests
+- ✅ **Test Driven Development**: 100% coverage on core business logic with 54 comprehensive tests
 
 ## How It Works
 
@@ -35,6 +37,32 @@ Result: "Witch's Twilight #2" gets 5x weight (next in active series)
         "Violets Are Blue #18" gets 5x weight (next in recently completed series)
         All other books get 1x weight (standard priority)
 ```
+
+### Curated Reading Sheet
+
+The system creates a second Google Sheet called "Curated Reading" that filters your to-read list to show only:
+- **First books** in any series (book #1) - great starting points
+- **Next books** in active series - books you're ready to continue
+- **Standalone books** - all non-series books
+
+This eliminates clutter from middle books in series you haven't started yet, making it easier to pick your next read.
+
+### Progressive Series Support
+
+For light novel series (like Sword Art Online), the system recognizes when a "Progressive" retelling must be read before the main series:
+
+```
+Series Structure:
+- Sword Art Online: Progressive #1-9 (detailed retelling)
+- Sword Art Online #1-28 (main series)
+
+Reading Order Enforced:
+1. Read Progressive #1-9 first
+2. Only after Progressive is complete, show SAO #1
+3. Continue with SAO #2, #3, etc.
+```
+
+The system automatically detects ": Progressive" in series names and ensures proper reading order. See [PROGRESSIVE_SERIES.md](./PROGRESSIVE_SERIES.md) for technical details.
 
 ## Key Benefits
 
@@ -60,13 +88,15 @@ Result: "Witch's Twilight #2" gets 5x weight (next in active series)
 src/
 ├── core/                   # Core domain logic
 │   ├── types.ts           # Type definitions
-│   ├── SeriesDetector.ts  # Series pattern detection
+│   ├── SeriesDetector.ts  # Series pattern detection & Progressive series handling
 │   └── BookWeightingApp.ts # Main application orchestrator
 ├── services/              # Business logic services
 │   ├── GoodreadsCSVService.ts    # CSV reading and filtering
-│   ├── ActiveSeriesService.ts    # Active series detection
+│   ├── ActiveSeriesService.ts    # Active series detection & Progressive logic
 │   ├── BookWeightingService.ts   # Series continuation weighting
-│   └── GoogleSheetsService.ts    # Google Sheets integration
+│   ├── ToReadSeriesService.ts    # To-read series analysis
+│   ├── SeriesProgressionTimelineService.ts  # Series progression tracking
+│   └── GoogleSheetsService.ts    # Google Sheets integration & Curated Reading sheet
 ├── utils/                 # Utility functions
 ├── gui/                   # File dialog components
 │   ├── fileDialog.ts
@@ -176,16 +206,17 @@ for (const book of toReadBooks) {
 
 This project uses Jest for unit and integration testing, following Test Driven Development principles.
 
-- **Total tests:** 36
-- **Test suites:** 6
+- **Total tests:** 54
+- **Test suites:** 7
 - **Coverage summary:**
-  - **Statements:** 59.91%
-  - **Branches:** 67.74%
-  - **Functions:** 68.88%
-  - **Lines:** 60.74%
+  - **Statements:** 60%+
+  - **Branches:** 68%+
+  - **Functions:** 69%+
+  - **Lines:** 61%+
 - **Core business logic:** 100% coverage
-- **Active Series Logic:** 91.3% coverage
-- **CSV Processing:** 84% coverage
+- **Active Series Logic:** 91%+ coverage
+- **CSV Processing:** 84%+ coverage
+- **Progressive Series Detection:** 100% coverage
 
 ### How to Run Tests & View Coverage
 
@@ -222,9 +253,32 @@ pnpm run lint
 
 ### Test Structure
 
-- **Unit Tests**: Test individual components in isolation (30 tests)
-- **Integration Tests**: Test complete workflows end-to-end (6 tests)
+- **Unit Tests**: Test individual components in isolation (46 tests)
+- **Integration Tests**: Test complete workflows end-to-end (8 tests)
 - **Fixtures**: Reusable test data for consistent testing
+- **Progressive Series Tests**: Comprehensive coverage of Progressive series detection and handling
+
+## Google Sheets Output
+
+The application creates a Google Sheet with two tabs:
+
+### Sheet1 (Main Weighted List)
+Contains all your to-read books with weights applied:
+- **Book Title by Author**: Full book information
+- **Bookshelves**: Your GoodReads shelf tags
+- **Weight**: Numerical weight (5 for continuations, 1 for others)
+- **Reason**: Explanation of why the weight was applied
+
+### Curated Reading Sheet
+A filtered view showing only books you're ready to read:
+- **Book Title by Author**: Full book information
+- **Series Name**: The series this book belongs to (if any)
+- **Book Number**: Position in the series
+- **Type**: Classification (Standalone, First Book, Next in Series)
+- **Weight**: Numerical weight
+- **Reason**: Explanation of the weight
+
+This sheet is perfect for decision-making as it excludes middle books from series you haven't started yet.
 
 ## Example Output
 
@@ -232,8 +286,8 @@ pnpm run lint
 📚 GoodReads Book Weighting System
 =====================================
 
-� Please select your Goodreads CSV file...
-�📖 Reading to-read books...
+📂 Please select your Goodreads CSV file...
+📖 Reading to-read books...
    Found 89 books on your to-read shelf
 
 🧠 Analyzing active series and applying weights...
@@ -258,10 +312,16 @@ pnpm run lint
    5x weight: 3 books
    1x weight: 86 books
 
+📚 Created Curated Reading sheet with 45 books:
+   📖 Standalone books: 30
+   📚 First books in series: 12
+   ➡️  Next books in active series: 3
+
 ✅ Sync complete!
 📄 Summary:
   • Books exported: 89
   • High-priority books: 3
+  • Curated reading list: 45 books
   • Google Sheet: https://docs.google.com/spreadsheets/d/abc123
   
 🎯 Your book selection wheel now prioritizes series continuations!
@@ -278,6 +338,28 @@ pnpm run lint
 - ✅ **New Approach**: "Weight only Alex Cross #18 because I'm currently reading #17"
 
 This ensures your book wheel prioritizes **series progression** over **series popularity**.
+
+### Progressive Series Handling
+
+**Challenge**: Light novel series often have "Progressive" retellings that must be read before the main series, even though numbering restarts.
+
+**Solution**: The system detects ": Progressive" in series names and enforces reading order:
+1. Detects Progressive series relationships (e.g., "SAO: Progressive" → "SAO")
+2. Blocks main series books until Progressive series is complete
+3. Automatically shows next Progressive book when actively reading
+4. Transitions to main series #1 only after Progressive is finished
+
+This prevents reading books out of order and maintains story continuity for complex light novel series.
+
+### Curated Reading Sheet
+
+**Problem**: Large to-read lists with many series can be overwhelming, especially when they include middle books from series you haven't started.
+
+**Solution**: A separate sheet that filters to show only:
+- Books you can start right now (first books, standalones)
+- Books you're ready to continue (next in active series)
+
+This reduces decision fatigue and makes book selection more enjoyable.
 
 ### Test Driven Development
 

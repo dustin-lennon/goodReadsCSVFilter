@@ -90,4 +90,41 @@ export class SeriesDetector {
   static normalizeAuthor(author: string): string {
     return author.trim().toLowerCase().replace(/\s+/g, ' ');
   }
+
+  /**
+   * Detect if a series is a "Progressive" variant and extract the base series name
+   * Example: "Sword Art Online: Progressive" -> { isProgressive: true, baseSeries: "Sword Art Online" }
+   */
+  static detectProgressiveSeries(seriesName: string): {
+    isProgressive: boolean;
+    baseSeries: string | null;
+  } {
+    const progressivePattern = /^(.+?):\s*Progressive$/i;
+    const match = seriesName.match(progressivePattern);
+
+    if (match) {
+      return {
+        isProgressive: true,
+        baseSeries: match[1].trim(),
+      };
+    }
+
+    return {
+      isProgressive: false,
+      baseSeries: null,
+    };
+  }
+
+  /**
+   * Check if a series is the base series for a Progressive variant
+   * Example: "Sword Art Online" is base for "Sword Art Online: Progressive"
+   */
+  static isBaseSeriesForProgressive(seriesName: string, progressiveSeriesName: string): boolean {
+    const progressiveInfo = this.detectProgressiveSeries(progressiveSeriesName);
+    if (!progressiveInfo.isProgressive) {
+      return false;
+    }
+
+    return seriesName.toLowerCase() === progressiveInfo.baseSeries?.toLowerCase();
+  }
 }
