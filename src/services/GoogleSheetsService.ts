@@ -123,17 +123,43 @@ export class GoogleSheetsService {
     const activeSeries = await ActiveSeriesService.detectActiveSeries(csvFilePath);
 
     // Filter books for curated reading sheet
-    const curatedBooks = weightedBooks.filter((wb) => {
+    const curatedBooksPromises = weightedBooks.map(async (wb) => {
       const seriesInfo = SeriesDetector.extractSeriesInfo(wb.book.Title);
 
       // Include all non-series books (standalone books)
       if (!seriesInfo.seriesName) {
-        return true;
+        return { include: true, book: wb };
       }
 
-      // Include if it's book #1 of any series
+      // For book #1, check if there's a Progressive variant that should be read first
       if (seriesInfo.bookNumber === 1) {
-        return true;
+        // Check if this is a base series that has a Progressive variant
+        const progressiveSeriesName = `${seriesInfo.seriesName}: Progressive`;
+        const allBooks = await import('./GoodreadsCSVService').then((m) =>
+          m.GoodreadsCSVService.getAllBooks(csvFilePath),
+        );
+
+        const progressiveBooks = allBooks.filter((b) => {
+          const info = SeriesDetector.extractSeriesInfo(b.Title);
+          return (
+            info.seriesName?.toLowerCase() === progressiveSeriesName.toLowerCase() &&
+            SeriesDetector.normalizeAuthor(b.Author) ===
+              SeriesDetector.normalizeAuthor(wb.book.Author)
+          );
+        });
+
+        // If Progressive series exists and has unread books, exclude this base series #1
+        if (progressiveBooks.length > 0) {
+          const toReadProgressiveBooks = progressiveBooks.filter(
+            (b) => b['Exclusive Shelf'] === 'to-read',
+          );
+          if (toReadProgressiveBooks.length > 0) {
+            return { include: false, book: wb };
+          }
+        }
+
+        // No Progressive series or it's complete, include this book #1
+        return { include: true, book: wb };
       }
 
       // Include if it's the next book in an active series
@@ -141,12 +167,17 @@ export class GoogleSheetsService {
         seriesInfo.bookNumber &&
         ActiveSeriesService.isNextInActiveSeries(wb.book, activeSeries)
       ) {
-        return true;
+        return { include: true, book: wb };
       }
 
       // Exclude other series books (not first, not next in active series)
-      return false;
+      return { include: false, book: wb };
     });
+
+    const curatedBooksResults = await Promise.all(curatedBooksPromises);
+    const curatedBooks = curatedBooksResults
+      .filter((result) => result.include)
+      .map((result) => result.book);
 
     // Check if Curated Reading sheet exists, create if not
     try {
