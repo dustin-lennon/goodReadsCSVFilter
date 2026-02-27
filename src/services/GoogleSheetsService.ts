@@ -110,6 +110,7 @@ export class GoogleSheetsService {
    * - First books in any series (book #1)
    * - Next books in active series (continuation books)
    * - All non-series books (standalone books)
+   * - Handles Progressive series (e.g., "SAO: Progressive" must be read before "SAO")
    */
   static async createCuratedReadingSheet(
     sheetId: string,

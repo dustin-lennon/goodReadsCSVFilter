@@ -68,3 +68,71 @@ describe('SeriesDetector', () => {
     });
   });
 });
+
+describe('detectProgressiveSeries', () => {
+  it('should detect Progressive series and extract base series name', () => {
+    const result = SeriesDetector.detectProgressiveSeries('Sword Art Online: Progressive');
+
+    expect(result.isProgressive).toBe(true);
+    expect(result.baseSeries).toBe('Sword Art Online');
+  });
+
+  it('should handle case-insensitive Progressive detection', () => {
+    const result = SeriesDetector.detectProgressiveSeries('Sword Art Online: PROGRESSIVE');
+
+    expect(result.isProgressive).toBe(true);
+    expect(result.baseSeries).toBe('Sword Art Online');
+  });
+
+  it('should return false for non-Progressive series', () => {
+    const result = SeriesDetector.detectProgressiveSeries('Sword Art Online');
+
+    expect(result.isProgressive).toBe(false);
+    expect(result.baseSeries).toBeNull();
+  });
+
+  it('should return false for series with Progressive in the middle', () => {
+    const result = SeriesDetector.detectProgressiveSeries('Progressive Sword Art Online');
+
+    expect(result.isProgressive).toBe(false);
+    expect(result.baseSeries).toBeNull();
+  });
+});
+
+describe('isBaseSeriesForProgressive', () => {
+  it('should identify base series for Progressive variant', () => {
+    const result = SeriesDetector.isBaseSeriesForProgressive(
+      'Sword Art Online',
+      'Sword Art Online: Progressive',
+    );
+
+    expect(result).toBe(true);
+  });
+
+  it('should handle case-insensitive comparison', () => {
+    const result = SeriesDetector.isBaseSeriesForProgressive(
+      'sword art online',
+      'Sword Art Online: Progressive',
+    );
+
+    expect(result).toBe(true);
+  });
+
+  it('should return false for non-matching series', () => {
+    const result = SeriesDetector.isBaseSeriesForProgressive(
+      'Different Series',
+      'Sword Art Online: Progressive',
+    );
+
+    expect(result).toBe(false);
+  });
+
+  it('should return false when second parameter is not Progressive', () => {
+    const result = SeriesDetector.isBaseSeriesForProgressive(
+      'Sword Art Online',
+      'Sword Art Online',
+    );
+
+    expect(result).toBe(false);
+  });
+});

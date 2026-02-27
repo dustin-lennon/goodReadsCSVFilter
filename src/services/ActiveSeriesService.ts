@@ -159,7 +159,7 @@ export class ActiveSeriesService {
   }
 
   /**
-   * Check if a book is the next book in an active series
+   * Check if a book is the next book in an active series (synchronous version for backward compatibility)
    */
   static isNextInActiveSeries(book: Book, activeSeries: ActiveSeries[]): boolean {
     const seriesInfo = SeriesDetector.extractSeriesInfo(book.Title);
@@ -184,5 +184,85 @@ export class ActiveSeriesService {
     // Check if this book is the next one in sequence
     const expectedNextNumber = matchingSeries.currentBookNumber + 1;
     return Math.abs(seriesInfo.bookNumber - expectedNextNumber) < 0.1; // Handle decimal book numbers
+  }
+
+  /**
+   * Check if a book is the next book in an active series, considering Progressive series relationships
+   */
+  static async isNextInActiveSeriesWithProgressive(
+    book: Book,
+    activeSeries: ActiveSeries[],
+    csvFilePath: string,
+  ): Promise<boolean> {
+    const seriesInfo = SeriesDetector.extractSeriesInfo(book.Title);
+
+    if (!seriesInfo.seriesName || !seriesInfo.bookNumber) {
+      return false;
+    }
+
+    const normalizedAuthor = SeriesDetector.normalizeAuthor(book.Author);
+
+    // Check if this is a Progressive series
+    const progressiveInfo = SeriesDetector.detectProgressiveSeries(seriesInfo.seriesName);
+
+    // Find matching active series
+    const matchingSeries = activeSeries.find(
+      (s) =>
+        s.seriesName.toLowerCase() === seriesInfo.seriesName!.toLowerCase() &&
+        s.normalizedAuthor === normalizedAuthor,
+    );
+
+    if (matchingSeries) {
+      // Check if this book is the next one in sequence
+      const expectedNextNumber = matchingSeries.currentBookNumber + 1;
+      return Math.abs(seriesInfo.bookNumber - expectedNextNumber) < 0.1;
+    }
+
+    // If this is a base series (not Progressive), check if there's a Progressive variant that needs to be completed first
+    if (!progressiveInfo.isProgressive) {
+      const progressiveSeriesName = `${seriesInfo.seriesName}: Progressive`;
+      const progressiveSeries = activeSeries.find(
+        (s) =>
+          s.seriesName.toLowerCase() === progressiveSeriesName.toLowerCase() &&
+          s.normalizedAuthor === normalizedAuthor,
+      );
+
+      // If Progressive series is active, the base series should not be considered active yet
+      if (progressiveSeries) {
+        return false;
+      }
+
+      // Check if Progressive series exists and is complete
+      const allBooks = await GoodreadsCSVService.getAllBooks(csvFilePath);
+      const progressiveBooks = allBooks.filter((b) => {
+        const info = SeriesDetector.extractSeriesInfo(b.Title);
+        return (
+          info.seriesName?.toLowerCase() === progressiveSeriesName.toLowerCase() &&
+          SeriesDetector.normalizeAuthor(b.Author) === normalizedAuthor
+        );
+      });
+
+      if (progressiveBooks.length > 0) {
+        // Progressive series exists - check if it's complete
+        const readProgressiveBooks = progressiveBooks.filter(
+          (b) => b['Exclusive Shelf'] === 'read',
+        );
+        const toReadProgressiveBooks = progressiveBooks.filter(
+          (b) => b['Exclusive Shelf'] === 'to-read',
+        );
+
+        // If there are unread Progressive books, base series should not be active
+        if (toReadProgressiveBooks.length > 0) {
+          return false;
+        }
+
+        // Progressive series is complete, check if this is book #1 of base series
+        if (seriesInfo.bookNumber === 1 && readProgressiveBooks.length > 0) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
