@@ -108,13 +108,21 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
 
   const server = createServer(async (req, res) => {
     try {
-      if (!req.url || !req.url.includes('/?code=')) return;
+      console.log(`📥 Received request: ${req.url}`);
+
+      if (!req.url || !req.url.includes('code=')) {
+        console.log(`⚠️ Request doesn't contain code parameter, ignoring...`);
+        return;
+      }
 
       const url = new URL(req.url, 'http://localhost');
       const code = url.searchParams.get('code');
 
+      console.log(`🔑 Extracted authorization code: ${code ? 'YES' : 'NO'}`);
+
       if (!code) throw new Error('No code in request');
 
+      console.log(`🔄 Exchanging code for tokens...`);
       const { tokens } = await oAuth2Client.getToken(code);
 
       if (!tokens.access_token && !tokens.refresh_token) {
@@ -126,6 +134,7 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
 
       oAuth2Client.setCredentials(tokens);
       await writeFile(TOKEN_PATH, JSON.stringify(tokens), 'utf-8');
+      console.log(`💾 Token saved to: ${TOKEN_PATH}`);
 
       res.end('Authorization successful! You can close this tab.');
       server.destroy();
@@ -133,7 +142,8 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
       return;
     } catch (err) {
       console.error('❌ Error handling OAuth callback:', err);
-      res.end('❌ Error during authentication.');
+      console.error('❌ Error details:', JSON.stringify(err, null, 2));
+      res.end('❌ Error during authentication. Check terminal for details.');
       server.destroy();
     }
   }).listen(80);
