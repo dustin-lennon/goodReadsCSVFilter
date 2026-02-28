@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.1...v1.3.2) (2026-02-28)
+
+
+### Bug Fixes
+
+* progressive series detection with suffixes ([a5f5f29](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/a5f5f295a7b478969775a9c762c4aada7d582a0e)), closes [#54](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/54) [#55](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/55) [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1)
+
 ## [1.3.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.0...v1.3.1) (2026-02-28)
 
 
