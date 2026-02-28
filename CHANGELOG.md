@@ -1,3 +1,23 @@
+# [1.3.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.2.0...v1.3.0) (2026-02-28)
+
+
+### Bug Fixes
+
+* configure dev branch as prerelease in semantic-release ([73730b7](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/73730b743bd5fae0470abeaed7de344f82c2bd01))
+* disable npm publishing in semantic-release ([09cd2ab](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/09cd2ab5da51bb258a2ca4476ddf9e1c3ae1d870))
+* eslint configuration for test files ([c59cddd](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/c59cddd26d50b5304cef5abf2c5db3a1d41a2674))
+* eslint configuration for test files ([0a72c67](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/0a72c6719d39c066054d54ff7fa6b3afbe2b27a3))
+* oauth callback detection and progressive series filtering ([f173769](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/f1737697db3d16e8b0789c41b0ffbc1da0f0ed3c)), closes [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1) [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1)
+* oauth callback detection and progressive series filtering ([c1dd089](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/c1dd0898f93c8cbadf6e4b56796bc09ddd365928)), closes [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1) [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1)
+* remove duplicate 'with' key in build-executables workflow ([1f02c29](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1f02c29083e8c59d054dfd9787850b90f08bb4e0))
+* remove environment requirement from release workflow ([a9ffcf7](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/a9ffcf711813817107c14f69a26e21623501917d))
+
+
+### Features
+
+* add Progressive series support for light novel reading order ([0cea0e4](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/0cea0e47c0efbcaee9ca44ccdf14e7f4d78b4a46)), closes [#2](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/2)
+* add Progressive series support for light novel reading order ([160a449](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/160a4494212512336dff2651ef07c86977d53ec4)), closes [#2](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/2)
+
 # [1.2.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.1.2...v1.2.0) (2026-02-02)
 
 
