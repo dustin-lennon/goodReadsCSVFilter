@@ -97,6 +97,15 @@ describe('detectProgressiveSeries', () => {
     expect(result.isProgressive).toBe(false);
     expect(result.baseSeries).toBeNull();
   });
+
+  it('should detect Progressive series with suffixes like "Light Novel"', () => {
+    const result = SeriesDetector.detectProgressiveSeries(
+      'Sword Art Online: Progressive Light Novel',
+    );
+
+    expect(result.isProgressive).toBe(true);
+    expect(result.baseSeries).toBe('Sword Art Online');
+  });
 });
 
 describe('isBaseSeriesForProgressive', () => {
