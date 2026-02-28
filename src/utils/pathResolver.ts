@@ -123,3 +123,45 @@ export function getResourcePath(filename: string): string {
   }
   return path.join(process.cwd(), filename);
 }
+
+/**
+ * Get writable path for user data files (like token.json)
+ * Always returns a writable location, even in packaged apps
+ */
+export function getWritablePath(filename: string): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let electronApp: any = null;
+
+  try {
+    electronApp = require('electron');
+    if (electronApp?.app?.getPath) {
+      // In Electron, always use userData directory for writable files
+      return path.join(electronApp.app.getPath('userData'), filename);
+    }
+  } catch {
+    // Electron not available
+  }
+
+  // Not in Electron or userData not available
+  // Try to find project root
+  let projectRoot: string | null = null;
+
+  try {
+    if (typeof __dirname !== 'undefined') {
+      projectRoot = findProjectRoot(__dirname);
+    }
+  } catch {
+    // Continue
+  }
+
+  if (!projectRoot && require.main) {
+    projectRoot = findProjectRoot(require.main.filename || process.cwd());
+  }
+
+  if (!projectRoot) {
+    projectRoot = findProjectRoot(process.cwd());
+  }
+
+  // Return project root or current working directory
+  return projectRoot ? path.join(projectRoot, filename) : path.join(process.cwd(), filename);
+}

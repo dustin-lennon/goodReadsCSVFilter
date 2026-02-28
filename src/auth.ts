@@ -4,9 +4,9 @@ import { OAuth2Client } from 'google-auth-library';
 import { readFile, unlink, writeFile } from 'fs/promises';
 import { createServer } from 'http';
 import destroyer from 'server-destroy';
-import { getResourcePath } from './utils/pathResolver';
+import { getResourcePath, getWritablePath } from './utils/pathResolver';
 
-const TOKEN_PATH = getResourcePath('token.json');
+const TOKEN_PATH = getWritablePath('token.json');
 const CREDENTIALS_PATH = getResourcePath('client_secret.json');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
@@ -125,6 +125,10 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
       console.log(`🔄 Exchanging code for tokens...`);
       const { tokens } = await oAuth2Client.getToken(code);
 
+      console.log(`✅ Token exchange response received`);
+      console.log(`   - Has access_token: ${!!tokens.access_token}`);
+      console.log(`   - Has refresh_token: ${!!tokens.refresh_token}`);
+
       if (!tokens.access_token && !tokens.refresh_token) {
         throw new Error('❌ Token exchange failed — no access or refresh token.');
       }
@@ -143,7 +147,22 @@ async function getNewToken(oAuth2Client: OAuth2Client): Promise<OAuth2Client> {
     } catch (err) {
       console.error('❌ Error handling OAuth callback:', err);
       console.error('❌ Error details:', JSON.stringify(err, null, 2));
-      res.end('❌ Error during authentication. Check terminal for details.');
+
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      const errorStack = err instanceof Error ? err.stack : '';
+
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(`
+        <html>
+          <head><title>Authentication Error</title></head>
+          <body>
+            <h1>❌ Authentication Error</h1>
+            <p><strong>Error:</strong> ${errorMessage}</p>
+            <pre>${errorStack}</pre>
+            <p>You can close this window.</p>
+          </body>
+        </html>
+      `);
       server.destroy();
     }
   }).listen(80);
