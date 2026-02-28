@@ -1,7 +1,10 @@
 {
   "branches": [
     "main",
-    "dev",
+    {
+      "name": "dev",
+      "prerelease": true
+    },
     {
       "name": "release/*",
       "channel": "release"
