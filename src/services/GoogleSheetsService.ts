@@ -143,13 +143,23 @@ export class GoogleSheetsService {
           const info = SeriesDetector.extractSeriesInfo(b.Title);
           if (!info.seriesName) return false;
 
-          // Check if this book is from a Progressive series that matches our base series
+          // Check if this book is from a Progressive series
           const progressiveInfo = SeriesDetector.detectProgressiveSeries(info.seriesName);
           if (!progressiveInfo.isProgressive) return false;
 
-          // Check if the Progressive series is for this base series and same author
+          // The base series might have suffixes like "Light Novel", so we need to check
+          // if the Progressive base matches the current series (with or without suffix)
+          const currentSeriesBase = seriesInfo.seriesName?.toLowerCase() || '';
+          const progressiveBase = progressiveInfo.baseSeries?.toLowerCase() || '';
+
+          // Check if they match exactly, or if one is a prefix of the other
+          const matches =
+            currentSeriesBase === progressiveBase ||
+            currentSeriesBase.startsWith(progressiveBase + ' ') ||
+            progressiveBase.startsWith(currentSeriesBase + ' ');
+
           return (
-            progressiveInfo.baseSeries?.toLowerCase() === seriesInfo.seriesName?.toLowerCase() &&
+            matches &&
             SeriesDetector.normalizeAuthor(b.Author) ===
               SeriesDetector.normalizeAuthor(wb.book.Author)
           );
