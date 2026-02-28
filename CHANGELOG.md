@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.0...v1.3.1) (2026-02-28)
+
+
+### Bug Fixes
+
+* use writable path for token.json in packaged Electron app ([eaaab0c](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/eaaab0ca4eb68e87440db778953bd33a99e9fd2d))
+
 # [1.3.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.2.0...v1.3.0) (2026-02-28)
 
 
