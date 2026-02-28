@@ -94,12 +94,14 @@ export class SeriesDetector {
   /**
    * Detect if a series is a "Progressive" variant and extract the base series name
    * Example: "Sword Art Online: Progressive" -> { isProgressive: true, baseSeries: "Sword Art Online" }
+   * Example: "Sword Art Online: Progressive Light Novel" -> { isProgressive: true, baseSeries: "Sword Art Online" }
    */
   static detectProgressiveSeries(seriesName: string): {
     isProgressive: boolean;
     baseSeries: string | null;
   } {
-    const progressivePattern = /^(.+?):\s*Progressive$/i;
+    // Match ": Progressive" anywhere in the series name, with optional suffix after
+    const progressivePattern = /^(.+?):\s*Progressive(?:\s+.*)?$/i;
     const match = seriesName.match(progressivePattern);
 
     if (match) {

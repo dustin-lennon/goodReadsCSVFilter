@@ -133,16 +133,33 @@ export class GoogleSheetsService {
 
       // For book #1, check if there's a Progressive variant that should be read first
       if (seriesInfo.bookNumber === 1) {
-        // Check if this is a base series that has a Progressive variant
-        const progressiveSeriesName = `${seriesInfo.seriesName}: Progressive`;
+        // Get all books to check for Progressive variants
         const allBooks = await import('./GoodreadsCSVService').then((m) =>
           m.GoodreadsCSVService.getAllBooks(csvFilePath),
         );
 
+        // Check if there's a Progressive series for this base series
         const progressiveBooks = allBooks.filter((b) => {
           const info = SeriesDetector.extractSeriesInfo(b.Title);
+          if (!info.seriesName) return false;
+
+          // Check if this book is from a Progressive series
+          const progressiveInfo = SeriesDetector.detectProgressiveSeries(info.seriesName);
+          if (!progressiveInfo.isProgressive) return false;
+
+          // The base series might have suffixes like "Light Novel", so we need to check
+          // if the Progressive base matches the current series (with or without suffix)
+          const currentSeriesBase = seriesInfo.seriesName?.toLowerCase() || '';
+          const progressiveBase = progressiveInfo.baseSeries?.toLowerCase() || '';
+
+          // Check if they match exactly, or if one is a prefix of the other
+          const matches =
+            currentSeriesBase === progressiveBase ||
+            currentSeriesBase.startsWith(progressiveBase + ' ') ||
+            progressiveBase.startsWith(currentSeriesBase + ' ');
+
           return (
-            info.seriesName?.toLowerCase() === progressiveSeriesName.toLowerCase() &&
+            matches &&
             SeriesDetector.normalizeAuthor(b.Author) ===
               SeriesDetector.normalizeAuthor(wb.book.Author)
           );
