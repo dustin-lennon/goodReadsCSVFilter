@@ -113,6 +113,52 @@ export class SeriesProgressionTimelineService {
       }
     }
 
+    // Pass 1.5: CJK read reconciliation
+    // When a CJK bracket edition is "read" and the same author has exactly one English Vol.
+    // series that is missing that volume number, add it as read. Applies only to "read"
+    // shelf — to-read/reading-next CJK entries are intentionally ignored to avoid creating
+    // phantom continuation books for foreign editions the user may not be tracking.
+    const CJK_RE = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/;
+    const BRACKET_VOL_RE = /^.+\s+(\d+(?:\.\d+)?)\s+\[.+?\s+\1\]$/;
+
+    for (const book of allBooks) {
+      if (!CJK_RE.test(book.Title)) continue;
+      if (book['Exclusive Shelf']?.trim().toLowerCase() !== ShelfType.READ) continue;
+
+      const bracketMatch = book.Title.match(BRACKET_VOL_RE);
+      if (!bracketMatch) continue;
+
+      const volNumber = parseFloat(bracketMatch[1]);
+      const normalizedAuthor = SeriesDetector.normalizeAuthor(book.Author);
+
+      // Find all series by this author
+      const authorSeries = [...seriesMap.values()].filter(
+        (s) => s.normalizedAuthor === normalizedAuthor,
+      );
+
+      // Only reconcile when there is exactly one series — avoids guessing which
+      // series the CJK volume belongs to when an author has multiple tracked series
+      if (authorSeries.length !== 1) continue;
+
+      const series = authorSeries[0];
+
+      // Only fill if the volume is genuinely missing
+      if (series.books.some((b) => b.bookNumber === volNumber)) continue;
+
+      const dateRead = book['Date Read'] ? new Date(book['Date Read']) : undefined;
+      series.books.push({
+        title: book.Title,
+        bookNumber: volNumber,
+        status: BookProgressStatus.READ,
+        dateRead,
+        author: book.Author,
+      });
+
+      if (volNumber > series.highestBookNumber) {
+        series.highestBookNumber = volNumber;
+      }
+    }
+
     // Second pass: handle books in series without explicit numbers
     // Collect unnumbered books for each series to infer their positions
     const unnumberedBooksBySeries = new Map<string, Array<{ book: Book; seriesName: string }>>();
