@@ -12,8 +12,7 @@ jest.mock('../../src/services/ActiveSeriesService', () => ({
         normalizedAuthor: 'crystal ash',
       },
     ]),
-    isNextInActiveSeries: jest.fn().mockImplementation((book) => {
-      // Mock logic: only "Witch's Twilight #2" is the next book
+    isNextInActiveSeriesWithProgressive: jest.fn().mockImplementation(async (book) => {
       return book.Title.includes("Witch's Twilight") && book.Title.includes('#2');
     }),
   },

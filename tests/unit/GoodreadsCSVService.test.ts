@@ -20,7 +20,12 @@ describe('GoodreadsCSVService', () => {
     await fs.writeFile(testCSVPath, csvContent);
   });
 
+  beforeEach(() => {
+    GoodreadsCSVService.clearCache();
+  });
+
   afterAll(async () => {
+    GoodreadsCSVService.clearCache();
     try {
       await fs.unlink(testCSVPath);
     } catch {
@@ -63,6 +68,23 @@ describe('GoodreadsCSVService', () => {
       } finally {
         await fs.unlink(invalidCSVPath);
       }
+    });
+
+    it('should return cached result on second call without re-reading file', async () => {
+      const first = await GoodreadsCSVService.readAllBooks(testCSVPath);
+      // Mutate cached array to verify second call returns same reference
+      const sentinel = { Title: 'sentinel', Author: '', Bookshelves: '', 'Exclusive Shelf': '' };
+      first.push(sentinel);
+
+      const second = await GoodreadsCSVService.readAllBooks(testCSVPath);
+      expect(second).toBe(first);
+      expect(second).toContain(sentinel);
+
+      // clearCache restores fresh read
+      GoodreadsCSVService.clearCache(testCSVPath);
+      const third = await GoodreadsCSVService.readAllBooks(testCSVPath);
+      expect(third).not.toBe(first);
+      expect(third).toHaveLength(5);
     });
   });
 
