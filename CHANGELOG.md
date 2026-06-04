@@ -1,3 +1,10 @@
+## [1.3.6](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.5...v1.3.6) (2026-06-04)
+
+
+### Bug Fixes
+
+* detect vol. and japanese bracket series title formats ([#71](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/71)) ([a5287fb](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/a5287fb2550002fc74ba9347bc1674f1a8bd5ed3)), closes [#70](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/70)
+
 ## [1.3.5](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.4...v1.3.5) (2026-06-04)
 
 
