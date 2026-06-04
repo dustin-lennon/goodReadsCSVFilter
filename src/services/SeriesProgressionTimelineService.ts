@@ -118,6 +118,11 @@ export class SeriesProgressionTimelineService {
     const unnumberedBooksBySeries = new Map<string, Array<{ book: Book; seriesName: string }>>();
 
     for (const book of allBooks) {
+      // Skip CJK-titled books from unnumbered inference
+      if (/[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(book.Title)) {
+        continue;
+      }
+
       const seriesInfo = SeriesDetector.extractSeriesInfo(book.Title);
 
       // Only process books that are in a series but don't have explicit numbers
@@ -310,6 +315,12 @@ export class SeriesProgressionTimelineService {
 
             // Must not already be in the series
             if (series.books.some((b) => b.title === book.Title)) {
+              return false;
+            }
+
+            // Skip CJK-titled books — foreign-language auto-added editions should not
+            // be inferred into an English series
+            if (/[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(book.Title)) {
               return false;
             }
 

@@ -53,9 +53,15 @@ export class SeriesDetector {
     }
 
     // Pattern 6: "Japanese Title N [Romanized Title N]" - manga with bracketed romanized titles
-    // e.g. "葬送のフリーレン 9 [Sōsō no Frieren 9]" -> series: "Sōsō no Frieren", book: 9
+    // If the title contains CJK characters, skip series tracking entirely — GoodReads
+    // auto-adds foreign-language editions that users may not be able to read, and they
+    // would otherwise pollute the timeline and weighting of the English edition.
     const pattern6 = title.match(/^.+\s+(\d+(?:\.\d+)?)\s+\[(.+?)\s+\1\]$/);
     if (pattern6) {
+      const hasCJK = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(title);
+      if (hasCJK) {
+        return { seriesName: null, bookNumber: undefined };
+      }
       return {
         seriesName: pattern6[2].trim(),
         bookNumber: parseFloat(pattern6[1]),
