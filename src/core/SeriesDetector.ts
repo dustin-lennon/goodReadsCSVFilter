@@ -52,6 +52,27 @@ export class SeriesDetector {
       }
     }
 
+    // Pattern 6: "Japanese Title N [Romanized Title N]" - manga with bracketed romanized titles
+    // e.g. "葬送のフリーレン 9 [Sōsō no Frieren 9]" -> series: "Sōsō no Frieren", book: 9
+    const pattern6 = title.match(/^.+\s+(\d+(?:\.\d+)?)\s+\[(.+?)\s+\1\]$/);
+    if (pattern6) {
+      return {
+        seriesName: pattern6[2].trim(),
+        bookNumber: parseFloat(pattern6[1]),
+      };
+    }
+
+    // Pattern 7: "Series Title, Vol. N" or "Series Title Vol. N" with optional trailing parens
+    // e.g. "Frieren: Beyond Journey's End, Vol. 7" -> series: "Frieren: Beyond Journey's End", book: 7
+    // Must come before Pattern 5 (colon) so full series name is captured, not just prefix
+    const pattern7 = title.match(/^(.+?),?\s+(?:vol(?:ume)?\.?\s*)(\d+(?:\.\d+)?)(?:\s*\(.+\))?$/i);
+    if (pattern7) {
+      return {
+        seriesName: pattern7[1].trim(),
+        bookNumber: parseFloat(pattern7[2]),
+      };
+    }
+
     // Pattern 5: "Series Name: Book Title"
     const pattern5 = title.match(/^(.+?):\s*(.+)/);
     if (pattern5) {
