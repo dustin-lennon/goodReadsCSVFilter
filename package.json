@@ -97,7 +97,8 @@
     },
     "linux": {
       "target": "AppImage"
-    }
+    },
+    "publish": "never"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
