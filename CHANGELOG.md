@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.3...v1.3.4) (2026-06-04)
+
+
+### Bug Fixes
+
+* disable electron-builder auto-publish to github ([#66](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/66)) ([68acc25](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/68acc2543fc21156c777ebce8ddb6a42d07bb3b7)), closes [softprops/action-#release](https://github.com/softprops/action-/issues/release) [#65](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/65)
+
 ## [1.3.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.2...v1.3.3) (2026-06-04)
 
 
