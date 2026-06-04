@@ -82,7 +82,7 @@ buildGuiProcess.on('close', (guiCode) => {
     
     console.log('\n🔨 Building executable with electron-builder...');
     // Use shell: true to ensure pnpm is found in PATH (especially on Windows in CI)
-    const buildProcess = spawn('pnpm', ['exec', 'electron-builder'], {
+    const buildProcess = spawn('pnpm', ['exec', 'electron-builder', '--publish', 'never'], {
         stdio: 'inherit',
         cwd: process.cwd(),
         shell: true
