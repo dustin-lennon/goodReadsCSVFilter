@@ -6,10 +6,25 @@ import { Book, ShelfType } from '../core/types';
  * Service for reading and filtering Goodreads CSV data
  */
 export class GoodreadsCSVService {
+  private static cache = new Map<string, Book[]>();
+
+  /** Clear cached books. Call with no args to clear all, or pass a path to clear one entry. */
+  static clearCache(filePath?: string): void {
+    if (filePath) {
+      this.cache.delete(filePath);
+    } else {
+      this.cache.clear();
+    }
+  }
+
   /**
-   * Read all books from CSV file
+   * Read all books from CSV file. Result is cached per file path for the lifetime of the process.
    */
   static async readAllBooks(filePath: string): Promise<Book[]> {
+    if (this.cache.has(filePath)) {
+      return this.cache.get(filePath)!;
+    }
+
     return new Promise((resolve, reject) => {
       const records: Book[] = [];
 
@@ -20,6 +35,7 @@ export class GoodreadsCSVService {
         })
         .on('end', () => {
           stream.destroy();
+          this.cache.set(filePath, records);
           resolve(records);
         })
         .on('error', (error) => {
@@ -33,26 +49,8 @@ export class GoodreadsCSVService {
    * Get books from a specific shelf
    */
   static async getBooksByShelf(filePath: string, shelfType: ShelfType): Promise<Book[]> {
-    return new Promise((resolve, reject) => {
-      const records: Book[] = [];
-
-      const stream = createReadStream(filePath)
-        .pipe(parse({ columns: true, skip_empty_lines: true }))
-        .on('data', (row: Book) => {
-          const shelf = row['Exclusive Shelf']?.trim().toLowerCase();
-          if (shelf === shelfType) {
-            records.push(row);
-          }
-        })
-        .on('end', () => {
-          stream.destroy();
-          resolve(records);
-        })
-        .on('error', (error) => {
-          stream.destroy();
-          reject(error);
-        });
-    });
+    const books = await this.readAllBooks(filePath);
+    return books.filter((row) => row['Exclusive Shelf']?.trim().toLowerCase() === shelfType);
   }
 
   /**
