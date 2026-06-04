@@ -1,3 +1,10 @@
+## [1.3.7](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.6...v1.3.7) (2026-06-04)
+
+
+### Bug Fixes
+
+* replace peter-evans/create-pull-request in sync workflow ([2168051](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/21680515a9e52b7a6f72708420c8080d031f12da))
+
 ## [1.3.6](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.5...v1.3.6) (2026-06-04)
 
 
