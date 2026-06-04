@@ -58,7 +58,9 @@ export class SeriesDetector {
     // would otherwise pollute the timeline and weighting of the English edition.
     const pattern6 = title.match(/^.+\s+(\d+(?:\.\d+)?)\s+\[(.+?)\s+\1\]$/);
     if (pattern6) {
-      const hasCJK = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(title);
+      const hasCJK = /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9F]/.test(
+        title,
+      );
       if (hasCJK) {
         return { seriesName: null, bookNumber: undefined };
       }

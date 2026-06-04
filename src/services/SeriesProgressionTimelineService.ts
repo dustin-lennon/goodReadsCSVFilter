@@ -118,7 +118,7 @@ export class SeriesProgressionTimelineService {
     // series that is missing that volume number, add it as read. Applies only to "read"
     // shelf — to-read/reading-next CJK entries are intentionally ignored to avoid creating
     // phantom continuation books for foreign editions the user may not be tracking.
-    const CJK_RE = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/;
+    const CJK_RE = /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9F]/;
     const BRACKET_VOL_RE = /^.+\s+(\d+(?:\.\d+)?)\s+\[.+?\s+\1\]$/;
 
     for (const book of allBooks) {
@@ -165,7 +165,7 @@ export class SeriesProgressionTimelineService {
 
     for (const book of allBooks) {
       // Skip CJK-titled books from unnumbered inference
-      if (/[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(book.Title)) {
+      if (CJK_RE.test(book.Title)) {
         continue;
       }
 
@@ -366,7 +366,7 @@ export class SeriesProgressionTimelineService {
 
             // Skip CJK-titled books — foreign-language auto-added editions should not
             // be inferred into an English series
-            if (/[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(book.Title)) {
+            if (CJK_RE.test(book.Title)) {
               return false;
             }
 
