@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.2...v1.3.3) (2026-06-04)
+
+
+### Bug Fixes
+
+* csv caching and progressive series weighting ([#62](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/62)) ([79f6ee0](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/79f6ee012fcb2f96ffc949843dc42d1f763bf83c)), closes [#61](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/61)
+
 ## [1.3.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.1...v1.3.2) (2026-02-28)
 
 
