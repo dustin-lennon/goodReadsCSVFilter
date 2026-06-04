@@ -142,48 +142,46 @@ jobs:
               console.log(`Could not auto-approve PR (may require manual approval): ${error.message}`);
             }
 
+      - name: Commit conflicts and push branch
+        if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'true'
+        run: |
+          git add -A
+          git commit -m "chore: sync main into dev (conflicts need resolution)"
+          git push origin "${{ steps.merge.outputs.branch_name }}"
+
       - name: Create PR for conflicts
         if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.merge.outputs.branch_name }}
-          title: "🔄 Sync main to dev (merge conflicts detected)"
-          body: |
-            ## 🔄 Automatic Sync: main → dev
-
-            **Status:** ⚠️ Merge conflicts detected
-
-            This pull request was automatically created because there were merge conflicts when attempting to sync changes from `main` into `dev`.
-
-            ### 📋 What happened:
-
-            - Changes were pushed to `main` and release workflow completed
-            - Automatic sync to `dev` was attempted
-            - Merge conflicts were detected and require manual resolution
-
-            ### 🛠️ Next steps:
-
-            1. Review the conflicts in the files below
-            2. Resolve conflicts manually
-            3. Commit the resolved changes
-            4. Merge this PR to complete the sync
-
-            ### 📊 Sync Details:
-
-            - **Source branch:** `main`
-            - **Target branch:** `dev`
-            - **Sync branch:** `${{ steps.merge.outputs.branch_name }}`
-            - **Triggered by:** Release workflow completion
-
-            ---
-
-            *This PR was automatically created by the sync workflow. Please resolve conflicts and merge to maintain Git Flow integrity.*
-          base: dev
-          labels: |
-            sync
-            merge-conflict
-            automation
+          script: |
+            const branchName = '${{ steps.merge.outputs.branch_name }}';
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'chore: sync main into dev (merge conflicts detected)',
+              head: branchName,
+              base: 'dev',
+              body: [
+                '## Automatic Sync: main → dev',
+                '',
+                '**Status:** ⚠️ Merge conflicts detected',
+                '',
+                'Automatic sync found conflicts. Resolve them in this branch and merge to complete the sync.',
+                '',
+                '### Next steps',
+                '1. Check out this branch',
+                '2. Resolve conflict markers in the affected files',
+                '3. Commit and push',
+                '4. Merge this PR',
+              ].join('\n'),
+            });
+            console.log(`Created PR #${pr.data.number}`);
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.data.number,
+              labels: ['sync', 'merge-conflict', 'automation'],
+            });
 
       - name: Comment on up-to-date
         if: steps.check_sync.outputs.sync_needed == 'false'
