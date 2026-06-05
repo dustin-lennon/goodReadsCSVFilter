@@ -3,11 +3,12 @@ import { readFile, writeFile } from 'fs/promises';
 import { authorize } from '../auth';
 import { OAuth2Client } from 'google-auth-library';
 import { WeightedBook } from '../core/types';
-import { getResourcePath } from '../utils/pathResolver';
+import { getWritablePath } from '../utils/pathResolver';
 import { SeriesDetector } from '../core/SeriesDetector';
 import { ActiveSeriesService } from './ActiveSeriesService';
 
-const SHEET_ID_FILE = getResourcePath('sheet-id.txt');
+// Per-user writable path — each user gets their own sheet
+const SHEET_ID_FILE = getWritablePath('sheet-id.txt');
 
 /**
  * Service for Google Sheets integration
