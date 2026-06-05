@@ -115,14 +115,14 @@ describe('ActiveSeriesService', () => {
 
       const result = await ActiveSeriesService.detectActiveSeries('fake-path.csv');
 
-      // Should detect the currently-reading book but not duplicate the reading-next book
-      // since it belongs to the same series by the same author
+      // Should detect one series entry (no duplicate), with currentBookNumber updated
+      // to the reading-next book so that the next to-read (#3) gets weighted correctly
       expect(result).toHaveLength(1);
 
       const unholyTrinity = result[0];
       expect(unholyTrinity.seriesName).toBe('Unholy Trinity');
       expect(unholyTrinity.author).toBe('Crystal Ash');
-      expect(unholyTrinity.currentBookNumber).toBe(1); // Should track the currently-reading book
+      expect(unholyTrinity.currentBookNumber).toBe(2); // reading-next #2 advances the pointer so to-read #3 gets 5x
     });
 
     it('should ignore books without series information', async () => {
