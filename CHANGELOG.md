@@ -1,3 +1,10 @@
+## [1.3.8](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.7...v1.3.8) (2026-06-05)
+
+
+### Bug Fixes
+
+* skip cjk bracket-format titles from series tracking ([#74](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/74)) ([0ccf7f1](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/0ccf7f1a231af00ef197405e75be6102dcd243ce)), closes [#73](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/73)
+
 ## [1.3.7](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.6...v1.3.7) (2026-06-04)
 
 
