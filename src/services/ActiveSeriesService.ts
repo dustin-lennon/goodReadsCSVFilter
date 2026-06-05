@@ -198,6 +198,7 @@ export class ActiveSeriesService {
     book: Book,
     activeSeries: ActiveSeries[],
     csvFilePath: string,
+    nextBookNumbers?: Map<string, number>,
   ): Promise<boolean> {
     const seriesInfo = SeriesDetector.extractSeriesInfo(book.Title);
 
@@ -218,7 +219,16 @@ export class ActiveSeriesService {
     );
 
     if (matchingSeries) {
-      // Check if this book is the next one in sequence
+      // Use pre-computed actual next book number when available (handles non-integer
+      // sequences like 0.1 → 0.2 → 1 → 2 where +1 assumption breaks)
+      if (nextBookNumbers) {
+        const key = `${matchingSeries.seriesName.toLowerCase()}|${matchingSeries.normalizedAuthor}`;
+        const actualNext = nextBookNumbers.get(key);
+        if (actualNext !== undefined) {
+          return Math.abs(seriesInfo.bookNumber - actualNext) < 0.001;
+        }
+      }
+      // Fall back to +1 assumption for integer sequences
       const expectedNextNumber = matchingSeries.currentBookNumber + 1;
       return Math.abs(seriesInfo.bookNumber - expectedNextNumber) < 0.1;
     }
