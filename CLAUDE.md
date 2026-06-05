@@ -4,7 +4,7 @@
 
 TypeScript Electron/CLI app that weights GoodReads to-read books based on series continuation analysis, then exports to Google Sheets for a book selection wheel.
 
-**Current version:** 1.3.2  
+**Current version:** 1.3.9  
 **Package manager:** pnpm  
 **Runtime:** Node 18+, Electron (GUI mode)
 
@@ -79,8 +79,36 @@ pnpm run build:executable  # standalone binary
 - `token.json` — OAuth token cached after first auth (writable path logic in pathResolver.ts)
 - `sheet-id.txt` — persisted Google Sheet ID
 
+## Git Workflow — MANDATORY
+
+Every change goes through a PR. No exceptions, including small fixes.
+
+```bash
+# 1. Create issue
+gh issue create --title "..." --label "bug"
+
+# 2. Branch from dev
+git checkout dev && git pull origin dev
+gh issue develop <N> --checkout
+
+# 3. Verify branch before EVERY commit
+git branch --show-current   # must NOT be main or dev
+
+# 4. Commit, push, open PR targeting dev
+git push -u origin <branch>
+gh pr create --base dev
+```
+
+### Flow
+- **Feature work:** branch off `dev` → PR to `dev` → CI runs → merge
+- **Release:** PR `dev` → `main` → semantic-release creates release
+- **Sync:** `sync-main-to-dev` workflow runs automatically after release
+
+**Never commit directly to `main` or `dev`.** Branches always from `dev`. PRs always target `dev`.
+
 ## What NOT to do
 
+- Don't commit directly to `main` or `dev` — always use a feature branch + PR
 - Don't edit `.js` test/fixture files directly — they're compiled outputs; edit `.ts` sources
 - Don't skip husky hooks (`--no-verify`) — fix the underlying lint/commit-format issue
 - Don't add weights beyond 5x/1x without updating `BookWeightingService` tests
