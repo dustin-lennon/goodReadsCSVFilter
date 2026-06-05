@@ -2,6 +2,8 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as path from 'path';
 import { BookWeightingApp } from '../core/BookWeightingApp';
 import { SeriesProgressionTimelineService } from '../services/SeriesProgressionTimelineService';
+import { AppSettingsService } from '../services/AppSettingsService';
+import { BookChatService } from '../services/BookChatService';
 
 class ElectronApp {
   private mainWindow: BrowserWindow | null = null;
@@ -118,14 +120,59 @@ class ElectronApp {
     ipcMain.handle('generate-timeline', async (_event, csvFilePath: string) => {
       try {
         const timeline = await SeriesProgressionTimelineService.generateTimeline(csvFilePath);
-        return {
-          success: true,
-          timeline,
-        };
+        return { success: true, timeline };
       } catch (error) {
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error occurred',
+        };
+      }
+    });
+
+    // --- Settings ---
+    ipcMain.handle('get-settings', () => {
+      return AppSettingsService.load();
+    });
+
+    ipcMain.handle('save-settings', (_event, settings: { anthropicApiKey?: string }) => {
+      AppSettingsService.save(settings);
+      return { success: true };
+    });
+
+    // --- Book Chat / Journal ---
+    ipcMain.handle('get-journal', () => {
+      return BookChatService.getJournal();
+    });
+
+    ipcMain.handle('get-journal-entry', (_event, id: string) => {
+      return BookChatService.getEntry(id) ?? null;
+    });
+
+    ipcMain.handle('delete-journal-entry', (_event, id: string) => {
+      BookChatService.deleteEntry(id);
+      return { success: true };
+    });
+
+    ipcMain.handle('start-book-chat', async (_event, bookTitle: string, progress: string) => {
+      try {
+        const entry = await BookChatService.startChat(bookTitle, progress);
+        return { success: true, entry };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    });
+
+    ipcMain.handle('send-chat-message', async (_event, entryId: string, message: string) => {
+      try {
+        const reply = await BookChatService.sendMessage(entryId, message);
+        return { success: true, message: reply };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
         };
       }
     });
