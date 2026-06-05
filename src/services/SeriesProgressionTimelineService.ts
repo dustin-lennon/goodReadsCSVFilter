@@ -460,10 +460,10 @@ export class SeriesProgressionTimelineService {
         continue;
       }
 
-      // Find the first book in the series (lowest book number)
-      // Try book #1 first, then fall back to the lowest book number
-      const bookOne = series.books.find((b) => b.bookNumber === 1);
-      const firstBook = bookOne || series.books[0]; // Use book #1 if exists, otherwise lowest number
+      // Find the first book in the series — always use the lowest book number.
+      // Do NOT prefer book #1 specifically: series with prequels numbered 0.1, 0.2, etc.
+      // (e.g. Practical Magic) have a lower-numbered first book that must be started.
+      const firstBook = series.books[0]; // books already sorted ascending by book number above
 
       const hasStartedSeries =
         firstBook &&
