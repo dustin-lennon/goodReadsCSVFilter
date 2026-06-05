@@ -87,7 +87,7 @@ Every change goes through a PR. No exceptions, including small fixes.
 # 1. Create issue
 gh issue create --title "..." --label "bug"
 
-# 2. Ensure you're on dev, then create + checkout branch from issue
+# 2. Branch from dev
 git checkout dev && git pull origin dev
 gh issue develop <N> --checkout
 
@@ -99,7 +99,12 @@ git push -u origin <branch>
 gh pr create --base dev
 ```
 
-**Branches always come from `dev`. PRs always target `dev`.** The sync workflow promotes `dev` → `main` after release. Never commit directly to `main` or `dev`. If accidentally on main/dev, stash changes and create a branch first.
+### Flow
+- **Feature work:** branch off `dev` → PR to `dev` → CI runs → merge
+- **Release:** PR `dev` → `main` → semantic-release creates release
+- **Sync:** `sync-main-to-dev` workflow runs automatically after release
+
+**Never commit directly to `main` or `dev`.** Branches always from `dev`. PRs always target `dev`.
 
 ## What NOT to do
 
