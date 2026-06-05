@@ -198,9 +198,17 @@ class BookWeightingGUI {
     div.className = `chat-message ${msg.role}`;
 
     if (msg.role === 'assistant') {
-      // Render markdown-ish: convert newlines to <p> tags
+      // Use DOM methods — never innerHTML with unsanitized content (XSS prevention)
       const paragraphs = msg.content.split(/\n\n+/).filter(Boolean);
-      div.innerHTML = paragraphs.map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+      paragraphs.forEach((p) => {
+        const pEl = document.createElement('p');
+        const lines = p.split('\n');
+        lines.forEach((line, idx) => {
+          if (idx > 0) pEl.appendChild(document.createElement('br'));
+          pEl.appendChild(document.createTextNode(line));
+        });
+        div.appendChild(pEl);
+      });
     } else {
       div.textContent = msg.content;
     }
