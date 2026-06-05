@@ -1,3 +1,10 @@
+## [1.3.9](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.8...v1.3.9) (2026-06-05)
+
+
+### Bug Fixes
+
+* reading-next book advances active series pointer for correct weighting ([59e775e](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/59e775ecf7f3653a677c14d05761e6efdc5278cd)), closes [#8](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/8) [#9](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/9) [#10-15](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/10-15)
+
 ## [1.3.8](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.7...v1.3.8) (2026-06-05)
 
 
