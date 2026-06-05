@@ -1,3 +1,10 @@
+## [1.3.10](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.9...v1.3.10) (2026-06-05)
+
+
+### Bug Fixes
+
+* series with decimal book numbers missing from timeline and weighting ([#81](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/81)) ([14d68ed](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/14d68ed160d9a62177e8b95512de87d5a63c679b)), closes [#74](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/74) [#73](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/73)
+
 ## [1.3.9](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.8...v1.3.9) (2026-06-05)
 
 
