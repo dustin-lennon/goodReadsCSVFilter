@@ -75,18 +75,18 @@ describe('SeriesDetector', () => {
       expect(result.bookNumber).toBe(1);
     });
 
-    it('should extract series info from Japanese bracket format: "Title N [Romanized N]"', () => {
+    it('should skip series tracking for CJK bracket format (auto-added foreign editions)', () => {
       const result = SeriesDetector.extractSeriesInfo('葬送のフリーレン 9 [Sōsō no Frieren 9]');
 
-      expect(result.seriesName).toBe('Sōsō no Frieren');
-      expect(result.bookNumber).toBe(9);
+      expect(result.seriesName).toBeNull();
+      expect(result.bookNumber).toBeUndefined();
     });
 
-    it('should extract series info from Japanese bracket format with multi-digit number', () => {
+    it('should skip series tracking for CJK bracket format with multi-digit number', () => {
       const result = SeriesDetector.extractSeriesInfo('葬送のフリーレン 15 [Sōsō no Frieren 15]');
 
-      expect(result.seriesName).toBe('Sōsō no Frieren');
-      expect(result.bookNumber).toBe(15);
+      expect(result.seriesName).toBeNull();
+      expect(result.bookNumber).toBeUndefined();
     });
   });
 
