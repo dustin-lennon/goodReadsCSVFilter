@@ -88,6 +88,11 @@ export class ActiveSeriesService {
             currentBookNumber: seriesInfo.bookNumber,
             normalizedAuthor: SeriesDetector.normalizeAuthor(book.Author),
           });
+        } else if (seriesInfo.bookNumber > existing.currentBookNumber) {
+          // Reading-next book is further along than the last-read book — update so
+          // the weighting correctly targets the book AFTER the reading-next one
+          existing.currentBook = book.Title;
+          existing.currentBookNumber = seriesInfo.bookNumber;
         }
       }
     }
