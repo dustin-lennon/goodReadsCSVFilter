@@ -3,6 +3,8 @@ import { GoogleSheetsService } from '../services/GoogleSheetsService';
 import { GoodreadsCSVService } from '../services/GoodreadsCSVService';
 import { BookWeightingService } from '../services/BookWeightingService';
 import { SeriesProgressionTimelineService } from '../services/SeriesProgressionTimelineService';
+import { LLMSeriesDetectionService } from '../services/LLMSeriesDetectionService';
+import { SeriesDetector } from './SeriesDetector';
 import { TimelineFormatter } from '../utils/timelineFormatter';
 import { selectCSVFile } from '../gui/launchFileDialog';
 import { handleError } from '../utils/errorHandler';
@@ -84,6 +86,33 @@ export class BookWeightingApp {
       progressCallback?.('📖 Reading to-read books...');
       const toReadBooks = await GoodreadsCSVService.getToReadBooks(csvFilePath);
       progressCallback?.(`   Found ${toReadBooks.length} books on your to-read shelf`);
+
+      // LLM enrichment: find books with no regex-detectable series info and ask Claude
+      if (LLMSeriesDetectionService.isAvailable()) {
+        const allBooks = await GoodreadsCSVService.getAllBooks(csvFilePath);
+        const needsLLM = allBooks
+          .filter((b) => {
+            const info = SeriesDetector.extractSeriesInfo(b.Title);
+            return !info.seriesName;
+          })
+          .map((b) => b.Title);
+
+        if (needsLLM.length > 0) {
+          progressCallback?.(
+            `🤖 Using AI to detect series for ${needsLLM.length} unrecognized titles...`,
+          );
+          const overrides = await LLMSeriesDetectionService.enrichMissingSeriesInfo(
+            needsLLM,
+            (done, total) => {
+              if (done % 5 === 0 || done === total) {
+                progressCallback?.(`   AI series detection: ${done}/${total}`);
+              }
+            },
+          );
+          SeriesDetector.setLLMOverrides(overrides);
+          progressCallback?.(`   AI detected series for ${overrides.size} additional books`);
+        }
+      }
 
       // Apply intelligent weighting based on series continuation
       progressCallback?.('🧠 Analyzing active series and applying weights...');

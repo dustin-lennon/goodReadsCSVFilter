@@ -317,16 +317,322 @@
             font-size: 0.8em;
             font-weight: bold;
         }
+
+        /* Tab navigation */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            border-radius: 0;
+            box-shadow: none;
+            transform: none;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-btn:hover { color: #667eea; transform: none; box-shadow: none; }
+        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Settings modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 480px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 { margin: 0 0 20px; color: #2c3e50; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #444; }
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .form-group small { display: block; margin-top: 5px; color: #888; font-size: 0.85em; }
+
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Book chat */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 20px;
+            min-height: 500px;
+        }
+
+        .journal-sidebar {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .journal-sidebar-header {
+            background: #f8f9ff;
+            padding: 12px 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .journal-list { flex: 1; overflow-y: auto; }
+
+        .journal-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .journal-item:hover { background: #f8f9ff; }
+        .journal-item.active { background: #eef0ff; border-left: 3px solid #667eea; }
+
+        .journal-item-title {
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #2c3e50;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .journal-item-meta {
+            font-size: 0.78em;
+            color: #888;
+        }
+
+        .chat-main {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-start-form {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-start-form h3 { margin: 0; color: #2c3e50; }
+        .chat-start-form p { margin: 0; color: #666; font-size: 0.95em; }
+
+        .chat-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-input-group label { font-weight: 500; color: #444; }
+
+        .chat-input-group input, .chat-input-group textarea {
+            padding: 10px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+        }
+
+        .chat-input-group input:focus,
+        .chat-input-group textarea:focus { outline: none; border-color: #667eea; }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 380px;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 0.93em;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.assistant {
+            align-self: flex-start;
+            background: #f0f4ff;
+            color: #2c3e50;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-message.assistant p { margin: 0 0 8px; }
+        .chat-message.assistant p:last-child { margin: 0; }
+
+        .chat-input-bar {
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-bar textarea {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 0.93em;
+            line-height: 1.4;
+        }
+
+        .chat-input-bar textarea:focus { outline: none; border-color: #667eea; }
+
+        .chat-input-bar button {
+            padding: 10px 18px;
+            align-self: flex-end;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9ff;
+        }
+
+        .chat-header-title { font-weight: 600; color: #2c3e50; margin-bottom: 3px; }
+        .chat-header-meta { font-size: 0.85em; color: #888; }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .settings-btn:hover { background: rgba(255,255,255,0.25); transform: none; box-shadow: none; }
+
+        .header { position: relative; }
+
+        .ai-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75em;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state .empty-icon { font-size: 3em; margin-bottom: 10px; }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .delete-btn:hover { color: #e74c3c; background: #ffeaea; transform: none; box-shadow: none; }
     </style>
 </head>
 <body>
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <h2>⚙️ Settings</h2>
+            <div class="form-group">
+                <label for="apiKeyInput">Anthropic API Key</label>
+                <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" />
+                <small>Used for AI series detection and Book Chat. Get your key at <strong>console.anthropic.com</strong></small>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
+                <button id="saveSettingsBtn">💾 Save</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>📚 GoodReads Book Weighting System</h1>
             <p>Intelligent series continuation weighting for your book selection wheel</p>
+            <button class="settings-btn" id="openSettingsBtn">⚙️ Settings</button>
         </div>
 
-        <div class="content">
+        <!-- Tab Navigation -->
+        <div style="padding: 0 30px; padding-top: 20px;">
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="processing">📚 Book Processing</button>
+                <button class="tab-btn" data-tab="chat">💬 Book Chat <span class="ai-badge">AI</span></button>
+            </div>
+        </div>
+
+        <!-- Processing Tab -->
+        <div class="tab-panel active content" id="tab-processing">
             <!-- Step 1: File Selection -->
             <div class="step active" id="step1">
                 <h3>
@@ -393,6 +699,57 @@
                     <div class="action-buttons">
                         <button id="openSheetsBtn" class="hidden">📊 Open Google Sheets</button>
                         <button id="processAnotherBtn">🔄 Process Another File</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Chat Tab -->
+        <div class="tab-panel content" id="tab-chat">
+            <div class="chat-layout">
+                <!-- Journal Sidebar -->
+                <div class="journal-sidebar">
+                    <div class="journal-sidebar-header">
+                        <span>📖 Journal</span>
+                        <button id="newChatBtn" style="background:none;border:none;color:#667eea;cursor:pointer;font-size:1.3em;padding:0;" title="New chat">＋</button>
+                    </div>
+                    <div class="journal-list" id="journalList">
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div>No conversations yet</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Main Area -->
+                <div class="chat-main" id="chatMain">
+                    <!-- Start Form (shown when no chat is active) -->
+                    <div class="chat-start-form" id="chatStartForm">
+                        <h3>💬 Book Chat</h3>
+                        <p>Tell me what book you're reading and where you are. I'll summarize what's happened so far and we can discuss it — without spoiling what comes next.</p>
+                        <div class="chat-input-group">
+                            <label for="bookTitleInput">Book Title</label>
+                            <input type="text" id="bookTitleInput" placeholder="e.g. The Name of the Wind" />
+                        </div>
+                        <div class="chat-input-group">
+                            <label for="progressInput">Where are you?</label>
+                            <input type="text" id="progressInput" placeholder="e.g. Chapter 12, halfway through, page 200..." />
+                        </div>
+                        <div id="chatStartError" style="color:#e74c3c;font-size:0.9em;display:none;"></div>
+                        <button id="startChatBtn">🤖 Start Discussion</button>
+                    </div>
+
+                    <!-- Active Chat (shown when a chat is open) -->
+                    <div id="activeChatPanel" style="display:none;flex-direction:column;height:100%;">
+                        <div class="chat-header">
+                            <div class="chat-header-title" id="activeChatTitle"></div>
+                            <div class="chat-header-meta" id="activeChatMeta"></div>
+                        </div>
+                        <div class="chat-messages" id="chatMessages"></div>
+                        <div class="chat-input-bar">
+                            <textarea id="chatMessageInput" rows="2" placeholder="Share your thoughts..."></textarea>
+                            <button id="sendMessageBtn">Send</button>
+                        </div>
                     </div>
                 </div>
             </div>

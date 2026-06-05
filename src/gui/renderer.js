@@ -4,8 +4,230 @@ class BookWeightingGUI {
   constructor() {
     this.selectedFilePath = null;
     this.results = null;
+    this.activeEntryId = null;
     this.initializeEventListeners();
+    this.initializeTabs();
+    this.initializeSettings();
+    this.initializeChat();
+    this.loadJournal();
   }
+
+  // ── Tab Navigation ──────────────────────────────────────────────────────────
+
+  initializeTabs() {
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        if (tab === 'chat') this.loadJournal();
+      });
+    });
+  }
+
+  // ── Settings ────────────────────────────────────────────────────────────────
+
+  initializeSettings() {
+    document.getElementById('openSettingsBtn').addEventListener('click', async () => {
+      const settings = await ipcRenderer.invoke('get-settings');
+      if (settings.anthropicApiKey) {
+        document.getElementById('apiKeyInput').value = settings.anthropicApiKey;
+      }
+      document.getElementById('settingsModal').classList.add('open');
+    });
+
+    document.getElementById('cancelSettingsBtn').addEventListener('click', () => {
+      document.getElementById('settingsModal').classList.remove('open');
+    });
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      await ipcRenderer.invoke('save-settings', { anthropicApiKey: key });
+      document.getElementById('settingsModal').classList.remove('open');
+    });
+
+    document.getElementById('settingsModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+    });
+  }
+
+  // ── Book Chat ────────────────────────────────────────────────────────────────
+
+  initializeChat() {
+    document.getElementById('newChatBtn').addEventListener('click', () => {
+      this.showChatStartForm();
+    });
+
+    document.getElementById('startChatBtn').addEventListener('click', async () => {
+      const title = document.getElementById('bookTitleInput').value.trim();
+      const progress = document.getElementById('progressInput').value.trim();
+      const errorEl = document.getElementById('chatStartError');
+
+      if (!title || !progress) {
+        errorEl.textContent = 'Please enter both a book title and your current progress.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+
+      const btn = document.getElementById('startChatBtn');
+      btn.disabled = true;
+      btn.textContent = '🤖 Starting...';
+
+      const response = await ipcRenderer.invoke('start-book-chat', title, progress);
+
+      btn.disabled = false;
+      btn.textContent = '🤖 Start Discussion';
+
+      if (response.success) {
+        this.loadJournal();
+        this.openChatEntry(response.entry);
+      } else {
+        errorEl.textContent =
+          response.error || 'Something went wrong. Check your API key in Settings.';
+        errorEl.style.display = 'block';
+      }
+    });
+
+    document.getElementById('sendMessageBtn').addEventListener('click', () => {
+      this.sendChatMessage();
+    });
+
+    document.getElementById('chatMessageInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.sendChatMessage();
+      }
+    });
+  }
+
+  async sendChatMessage() {
+    const input = document.getElementById('chatMessageInput');
+    const msg = input.value.trim();
+    if (!msg || !this.activeEntryId) return;
+
+    input.value = '';
+    this.appendChatMessage({ role: 'user', content: msg });
+
+    const sendBtn = document.getElementById('sendMessageBtn');
+    sendBtn.disabled = true;
+    sendBtn.textContent = '...';
+
+    const response = await ipcRenderer.invoke('send-chat-message', this.activeEntryId, msg);
+
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send';
+
+    if (response.success) {
+      this.appendChatMessage(response.message);
+    } else {
+      this.appendChatMessage({
+        role: 'assistant',
+        content: '⚠️ ' + (response.error || 'Something went wrong.'),
+      });
+    }
+  }
+
+  async loadJournal() {
+    const entries = await ipcRenderer.invoke('get-journal');
+    const list = document.getElementById('journalList');
+
+    if (entries.length === 0) {
+      list.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">📝</div><div>No conversations yet</div></div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    entries.forEach((entry) => {
+      const item = document.createElement('div');
+      item.className = 'journal-item' + (entry.id === this.activeEntryId ? ' active' : '');
+      item.dataset.id = entry.id;
+
+      const date = new Date(entry.updatedAt).toLocaleDateString();
+      item.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="flex:1;min-width:0;">
+            <div class="journal-item-title">${entry.bookTitle}</div>
+            <div class="journal-item-meta">${entry.progress} · ${date}</div>
+          </div>
+          <button class="delete-btn" data-id="${entry.id}" title="Delete">✕</button>
+        </div>
+      `;
+
+      item.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-btn')) return;
+        this.openChatEntry(entry);
+      });
+
+      item.querySelector('.delete-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await ipcRenderer.invoke('delete-journal-entry', entry.id);
+        if (this.activeEntryId === entry.id) this.showChatStartForm();
+        this.loadJournal();
+      });
+
+      list.appendChild(item);
+    });
+  }
+
+  openChatEntry(entry) {
+    this.activeEntryId = entry.id;
+
+    document.getElementById('chatStartForm').style.display = 'none';
+    const panel = document.getElementById('activeChatPanel');
+    panel.style.display = 'flex';
+
+    document.getElementById('activeChatTitle').textContent = `💬 ${entry.bookTitle}`;
+    document.getElementById('activeChatMeta').textContent = `Progress: ${entry.progress}`;
+
+    const messagesEl = document.getElementById('chatMessages');
+    messagesEl.innerHTML = '';
+    entry.messages.forEach((m) => this.appendChatMessage(m));
+
+    document.querySelectorAll('.journal-item').forEach((el) => {
+      el.classList.toggle('active', el.dataset.id === entry.id);
+    });
+  }
+
+  appendChatMessage(msg) {
+    const messagesEl = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `chat-message ${msg.role}`;
+
+    if (msg.role === 'assistant') {
+      // Use DOM methods — never innerHTML with unsanitized content (XSS prevention)
+      const paragraphs = msg.content.split(/\n\n+/).filter(Boolean);
+      paragraphs.forEach((p) => {
+        const pEl = document.createElement('p');
+        const lines = p.split('\n');
+        lines.forEach((line, idx) => {
+          if (idx > 0) pEl.appendChild(document.createElement('br'));
+          pEl.appendChild(document.createTextNode(line));
+        });
+        div.appendChild(pEl);
+      });
+    } else {
+      div.textContent = msg.content;
+    }
+
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  showChatStartForm() {
+    this.activeEntryId = null;
+    document.getElementById('chatStartForm').style.display = 'flex';
+    document.getElementById('activeChatPanel').style.display = 'none';
+    document.getElementById('bookTitleInput').value = '';
+    document.getElementById('progressInput').value = '';
+    document.getElementById('chatStartError').style.display = 'none';
+    document.querySelectorAll('.journal-item').forEach((el) => el.classList.remove('active'));
+  }
+
+  // ── Existing listeners ────────────────────────────────────────────────────
 
   initializeEventListeners() {
     // File selection

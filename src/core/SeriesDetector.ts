@@ -4,10 +4,25 @@ import { SeriesInfo } from '../core/types';
  * Extract series information from a book title using various patterns
  */
 export class SeriesDetector {
+  // LLM-enriched overrides: populated by LLMSeriesDetectionService before processing runs
+  private static llmOverrides = new Map<string, SeriesInfo>();
+
+  static setLLMOverrides(overrides: Map<string, SeriesInfo>): void {
+    this.llmOverrides = overrides;
+  }
+
+  static clearLLMOverrides(): void {
+    this.llmOverrides.clear();
+  }
+
   /**
    * Extract series information from a book title
    */
   static extractSeriesInfo(title: string): SeriesInfo {
+    // Check LLM override first (populated by enrichment pass when regex returns null)
+    if (this.llmOverrides.has(title)) {
+      return this.llmOverrides.get(title)!;
+    }
     const patterns = [
       // Pattern 1: "Book Title (Series Name, #1)" or "Book Title (Series Name #1)"
       /^(.+?)\s*\((.+?),?\s*#(\d+(?:\.\d+)?)\)/i,
