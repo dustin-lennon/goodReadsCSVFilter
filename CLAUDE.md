@@ -87,18 +87,19 @@ Every change goes through a PR. No exceptions, including small fixes.
 # 1. Create issue
 gh issue create --title "..." --label "bug"
 
-# 2. Create + checkout branch from issue
+# 2. Ensure you're on dev, then create + checkout branch from issue
+git checkout dev && git pull origin dev
 gh issue develop <N> --checkout
 
 # 3. Verify branch before EVERY commit
 git branch --show-current   # must NOT be main or dev
 
-# 4. Commit, push, open PR
+# 4. Commit, push, open PR targeting dev
 git push -u origin <branch>
-gh pr create --base main
+gh pr create --base dev
 ```
 
-**Never commit directly to `main` or `dev`.** If accidentally on main, stash changes and create a branch first.
+**Branches always come from `dev`. PRs always target `dev`.** The sync workflow promotes `dev` → `main` after release. Never commit directly to `main` or `dev`. If accidentally on main/dev, stash changes and create a branch first.
 
 ## What NOT to do
 
