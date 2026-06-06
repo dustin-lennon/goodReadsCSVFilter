@@ -1,10 +1,3 @@
-## [1.3.11](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.10...v1.3.11) (2026-06-06)
-
-
-### Bug Fixes
-
-* disable electron-builder npm rebuild for pnpm compatibility ([1ba9eb1](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1ba9eb19e2d294fbce837217c443d110e2d6cce8))
-
 ## [1.3.10](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.9...v1.3.10) (2026-06-05)
 
 
