@@ -64,6 +64,7 @@
   "build": {
     "appId": "com.goodreads.csvfilter",
     "productName": "GoodReads Book Weighting System",
+    "npmRebuild": false,
     "directories": {
       "output": "dist-executable"
     },
