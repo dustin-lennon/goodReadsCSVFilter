@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.5.0...v1.6.0) (2026-06-07)
+
+
+### Features
+
+* surface friendly error messages for Anthropic billing/auth/rate-limit failures ([89af370](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/89af3702c3fe1356d7c2d40d38fa861e23d6b726)), closes [#116](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/116)
+
 # [1.5.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.4.1...v1.5.0) (2026-06-07)
 
 
