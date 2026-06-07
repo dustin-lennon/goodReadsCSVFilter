@@ -116,9 +116,11 @@ class BookWeightingGUI {
     const sendBtn = document.getElementById('sendMessageBtn');
     sendBtn.disabled = true;
     sendBtn.textContent = '...';
+    this.showTypingIndicator();
 
     const response = await ipcRenderer.invoke('send-chat-message', this.activeEntryId, msg);
 
+    this.hideTypingIndicator();
     sendBtn.disabled = false;
     sendBtn.textContent = 'Send';
 
@@ -209,6 +211,20 @@ class BookWeightingGUI {
 
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  showTypingIndicator() {
+    const messagesEl = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-message assistant typing-indicator';
+    div.id = 'chatTypingIndicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  hideTypingIndicator() {
+    document.getElementById('chatTypingIndicator')?.remove();
   }
 
   showChatStartForm() {
