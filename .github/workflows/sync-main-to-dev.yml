@@ -64,8 +64,11 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           
           # Attempt to merge main into dev (back merge strategy)
+          # --no-ff forces a real merge commit so the PR head is never the
+          # release commit verbatim — that commit's "[skip ci]" message would
+          # otherwise cause GitHub to skip the required lint-test check entirely.
           set +e
-          git merge origin/main --no-edit
+          git merge origin/main --no-edit --no-ff
           merge_exit_code=$?
           set -e
           echo "merge_exit_code=$merge_exit_code" >> $GITHUB_OUTPUT
