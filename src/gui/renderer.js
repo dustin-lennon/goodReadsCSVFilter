@@ -1,4 +1,6 @@
 const { ipcRenderer } = require('electron');
+const { marked } = require('marked');
+const DOMPurify = require('dompurify');
 
 class BookWeightingGUI {
   constructor() {
@@ -198,17 +200,9 @@ class BookWeightingGUI {
     div.className = `chat-message ${msg.role}`;
 
     if (msg.role === 'assistant') {
-      // Use DOM methods — never innerHTML with unsanitized content (XSS prevention)
-      const paragraphs = msg.content.split(/\n\n+/).filter(Boolean);
-      paragraphs.forEach((p) => {
-        const pEl = document.createElement('p');
-        const lines = p.split('\n');
-        lines.forEach((line, idx) => {
-          if (idx > 0) pEl.appendChild(document.createElement('br'));
-          pEl.appendChild(document.createTextNode(line));
-        });
-        div.appendChild(pEl);
-      });
+      // Render markdown, then sanitize before inserting (XSS prevention)
+      const html = marked.parse(msg.content, { breaks: true });
+      div.innerHTML = DOMPurify.sanitize(html);
     } else {
       div.textContent = msg.content;
     }
