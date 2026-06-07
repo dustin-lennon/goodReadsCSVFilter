@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.4.0...v1.4.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* bump build-executables actions and fix release tag input ([#97](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/97)) ([6d2ea99](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/6d2ea99b41a569d1cad8c99bee835a450b3a962a)), closes [softprops/action-#release](https://github.com/softprops/action-/issues/release) [softprops/action-#release](https://github.com/softprops/action-/issues/release)
+
 # [1.4.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.11...v1.4.0) (2026-06-07)
 
 
