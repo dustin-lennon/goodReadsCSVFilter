@@ -20,6 +20,29 @@ export interface JournalEntry {
 
 const JOURNAL_FILE = getWritablePath('book-journal.json');
 
+/**
+ * Anthropic billing is prepay with no auto-refill — translate the raw API errors
+ * for low balance / rate limits / bad keys into messages a non-technical user can act on.
+ */
+function friendlyApiError(error: unknown): Error {
+  if (error instanceof Anthropic.APIError) {
+    if (error.status === 400 && /credit balance/i.test(error.message)) {
+      return new Error(
+        'Your Anthropic account is out of credits. Add funds at console.anthropic.com → Plans & Billing, then try again.',
+      );
+    }
+    if (error.status === 429) {
+      return new Error(
+        'Anthropic rate limit reached. Wait a moment and try again, or check your usage limits at console.anthropic.com.',
+      );
+    }
+    if (error.status === 401) {
+      return new Error('Your Anthropic API key looks invalid. Check it in Settings.');
+    }
+  }
+  return error instanceof Error ? error : new Error('Something went wrong talking to Anthropic.');
+}
+
 export class BookChatService {
   private static loadJournal(): JournalEntry[] {
     if (existsSync(JOURNAL_FILE)) {
@@ -77,12 +100,17 @@ If you don't have reliable knowledge of the book's content at the specific progr
 
     const openingMessage = `I'm reading "${bookTitle}". I'm currently at: ${progress}. Can you give me a summary of what's happened so far without spoiling what comes next, and then let's talk about it?`;
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: openingMessage }],
-    });
+    let response;
+    try {
+      response = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: openingMessage }],
+      });
+    } catch (error) {
+      throw friendlyApiError(error);
+    }
 
     const assistantText =
       response.content[0].type === 'text'
@@ -137,12 +165,17 @@ Rules:
     );
     history.push({ role: 'user', content: userMessage });
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: history,
-    });
+    let response;
+    try {
+      response = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: history,
+      });
+    } catch (error) {
+      throw friendlyApiError(error);
+    }
 
     const assistantText =
       response.content[0].type === 'text'
