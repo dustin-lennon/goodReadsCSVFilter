@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.2...v1.7.3) (2026-06-07)
+
+
+### Bug Fixes
+
+* use PAT instead of GITHUB_TOKEN in sync-main-to-dev so CI triggers ([360246b](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/360246b49c3339521b79c2fe81f35f1180aeb3be)), closes [#133](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/133)
+
 ## [1.7.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.1...v1.7.2) (2026-06-07)
 
 
