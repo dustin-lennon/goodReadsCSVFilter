@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.1...v1.7.2) (2026-06-07)
+
+
+### Bug Fixes
+
+* restore scrolling for content taller than the window ([44dfac2](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/44dfac223f86f2736c2917b3fd0594d1fea4c8b3)), closes [#124](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/124) [hi#priority](https://github.com/hi/issues/priority) [#127](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/127)
+
 ## [1.7.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.0...v1.7.1) (2026-06-07)
 
 
