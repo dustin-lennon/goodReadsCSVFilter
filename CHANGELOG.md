@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.6.0...v1.7.0) (2026-06-07)
+
+
+### Features
+
+* add typing indicator while waiting for AI Book Chat response ([73cb512](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/73cb51212a4e545e1b5512537a48208fdd510d07)), closes [#119](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/119)
+
 # [1.6.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.5.0...v1.6.0) (2026-06-07)
 
 
