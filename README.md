@@ -167,6 +167,28 @@ pnpm run build:executable
 > [console.anthropic.com](https://console.anthropic.com/) and add it via the in-app
 > **Settings** modal. Usage is billed to your own Anthropic account.
 
+### Screenshots (GUI)
+
+**Processing results — total books, high-priority count, and weight ratio:**
+
+![Book Processing results](docs/screenshots/gui-results.png)
+
+**High-priority series continuations, ranked by weight:**
+
+![High-priority books list](docs/screenshots/gui-high-priority-list.png)
+
+**Series progression timeline — read/in-progress/to-read breakdown per series:**
+
+![Series progression timeline](docs/screenshots/gui-series-timeline.png)
+
+**AI Book Chat — spoiler-aware discussion companion (requires your own Anthropic API key):**
+
+![Book Chat tab](docs/screenshots/gui-book-chat.png)
+
+**Settings — add your Anthropic API key for AI features:**
+
+![Settings modal](docs/screenshots/gui-settings.png)
+
 ### Setup
 
 1. **Google Sheets API Setup**:
