@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.0...v1.7.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* center main window content and size window to fit without scrolling ([696149f](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/696149f7444d35db70909ce596f0bbe520e18733)), closes [#123](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/123)
+
 # [1.7.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.6.0...v1.7.0) (2026-06-07)
 
 
