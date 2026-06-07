@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.4.1...v1.5.0) (2026-06-07)
+
+
+### Features
+
+* render markdown in AI book chat responses ([65f0f83](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/65f0f83a79101ff4cb92baf197cb57885e9f1f63)), closes [#105](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/105)
+
 ## [1.4.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.4.0...v1.4.1) (2026-06-07)
 
 
