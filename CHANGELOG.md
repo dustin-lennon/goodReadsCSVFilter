@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.3...v1.7.4) (2026-06-07)
+
+
+### Bug Fixes
+
+* force --no-ff merge in sync-main-to-dev to avoid [skip ci] head commit ([f40c0a6](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/f40c0a6d9e902a58d7a83034553e7d9b06d8b8c7)), closes [#126](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/126) [#122](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/122) [#132](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/132) [#136](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/136) [#137](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/137)
+
 ## [1.7.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.2...v1.7.3) (2026-06-07)
 
 
