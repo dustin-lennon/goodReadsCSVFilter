@@ -16,19 +16,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           persist-credentials: true
           fetch-depth: 0 # Fetch all history and tags for semantic-release
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Install dependencies
         run: pnpm install
