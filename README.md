@@ -147,6 +147,15 @@ pnpm run build:executable
 
 > 📖 **See [USAGE.md](./USAGE.md) for detailed instructions on all three options**
 
+> ⚠️ **macOS: "App is damaged and can't be opened"**
+> The released `.dmg` is not code-signed/notarized (no Apple Developer ID), so macOS
+> Gatekeeper quarantines it after download and shows this misleading message. To fix,
+> after copying the app to `/Applications`, run:
+> ```bash
+> xattr -cr "/Applications/GoodReads Book Weighting System.app"
+> ```
+> Then open the app normally (or right-click → Open on first launch).
+
 ### Setup
 
 1. **Google Sheets API Setup**:
