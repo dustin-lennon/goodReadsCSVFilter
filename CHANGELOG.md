@@ -1,3 +1,17 @@
+# [1.4.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.11...v1.4.0) (2026-06-07)
+
+
+### Bug Fixes
+
+* stop sync-main-to-dev from aborting merge before committing conflicts ([95b7fbc](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/95b7fbc32cba0fb70424670ca89029fda6c11393))
+* stop sync-main-to-dev from aborting merge before committing conflicts ([#93](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/93)) ([66cd121](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/66cd1219076c834d76fee54b96f8129eb4735135))
+* tighten book chat system prompts to prevent topic drift ([#89](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/89)) ([019a983](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/019a9831b6ed5745b4b3cd4752e32026e8423a52)), closes [#74](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/74) [#73](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/73)
+
+
+### Features
+
+* AI series detection, book chat/journal, multi-user Google support ([#85](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/85)) ([cf7a3b6](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/cf7a3b6394a9ae1658c806a3d09b49a34009bfcf)), closes [#74](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/74) [#73](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/73)
+
 ## [1.3.11](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.3.10...v1.3.11) (2026-06-06)
 
 
