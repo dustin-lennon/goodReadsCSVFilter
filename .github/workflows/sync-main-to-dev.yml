@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # Fetch full history for proper merging
@@ -93,7 +93,7 @@ jobs:
 
       - name: Create PR and auto-merge
         if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'false'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const branchName = '${{ steps.merge.outputs.branch_name }}';
@@ -149,7 +149,7 @@ jobs:
 
       - name: Create PR for conflicts
         if: steps.check_sync.outputs.sync_needed == 'true' && steps.check_merge.outputs.has_conflicts == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const branchName = '${{ steps.merge.outputs.branch_name }}';
