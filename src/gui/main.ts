@@ -34,7 +34,7 @@ class ElectronApp {
   private createWindow(): void {
     this.mainWindow = new BrowserWindow({
       width: 1000,
-      height: 700,
+      height: 940,
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
