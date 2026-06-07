@@ -156,6 +156,17 @@ pnpm run build:executable
 > ```
 > Then open the app normally (or right-click → Open on first launch).
 
+> ⚠️ **Windows: "Windows protected your PC"**
+> The released `.exe` installer is not code-signed (no code-signing certificate), so
+> Windows SmartScreen flags it as from an "Unknown publisher." Click **More info** →
+> **Run anyway** to proceed with installation.
+
+> ℹ️ **AI Book Chat requires your own Anthropic API key**
+> The Book Chat feature calls the Anthropic API directly from your machine — it is
+> **not** bundled with or proxied through the app. Get your own key at
+> [console.anthropic.com](https://console.anthropic.com/) and add it via the in-app
+> **Settings** modal. Usage is billed to your own Anthropic account.
+
 ### Setup
 
 1. **Google Sheets API Setup**:
