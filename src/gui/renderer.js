@@ -201,13 +201,9 @@ class BookWeightingGUI {
     const div = document.createElement('div');
     div.className = `chat-message ${msg.role}`;
 
-    if (msg.role === 'assistant') {
-      // Render markdown, then sanitize before inserting (XSS prevention)
-      const html = marked.parse(msg.content, { breaks: true });
-      div.innerHTML = DOMPurify.sanitize(html);
-    } else {
-      div.textContent = msg.content;
-    }
+    // Render markdown, then sanitize before inserting (XSS prevention)
+    const html = marked.parse(msg.content, { breaks: true });
+    div.innerHTML = DOMPurify.sanitize(html);
 
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;

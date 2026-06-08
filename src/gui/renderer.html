@@ -514,6 +514,27 @@
             border-bottom-right-radius: 4px;
         }
 
+        .chat-message.user p { margin: 0 0 8px; }
+        .chat-message.user p:last-child { margin: 0; }
+        .chat-message.user > *:last-child { margin-bottom: 0; }
+        .chat-message.user ul, .chat-message.user ol { margin: 0 0 8px; padding-left: 22px; }
+        .chat-message.user li { margin: 2px 0; }
+        .chat-message.user code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .chat-message.user pre {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .chat-message.user pre code { background: none; padding: 0; }
+        .chat-message.user a { color: #e0e6ff; }
+        .chat-message.user strong { font-weight: 600; }
+
         .chat-message.assistant {
             align-self: flex-start;
             background: #f0f4ff;
