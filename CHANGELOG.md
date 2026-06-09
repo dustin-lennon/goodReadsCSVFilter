@@ -1,3 +1,10 @@
+## [1.7.5](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.4...v1.7.5) (2026-06-08)
+
+
+### Bug Fixes
+
+* render markdown and preserve newlines in Book Chat user messages ([f38a007](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/f38a007e1ab7c9fc21ed7c6bb4a74ed572470861)), closes [#141](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/141)
+
 ## [1.7.4](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.3...v1.7.4) (2026-06-07)
 
 
