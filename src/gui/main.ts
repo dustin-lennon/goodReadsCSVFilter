@@ -4,6 +4,7 @@ import { BookWeightingApp } from '../core/BookWeightingApp';
 import { SeriesProgressionTimelineService } from '../services/SeriesProgressionTimelineService';
 import { AppSettingsService } from '../services/AppSettingsService';
 import { BookChatService } from '../services/BookChatService';
+import { GoodreadsCSVService } from '../services/GoodreadsCSVService';
 
 class ElectronApp {
   private mainWindow: BrowserWindow | null = null;
@@ -74,6 +75,7 @@ class ElectronApp {
     ipcMain.handle('select-csv-file', async () => {
       if (!this.mainWindow) return null;
 
+      this.mainWindow.focus();
       const { canceled, filePaths } = await dialog.showOpenDialog(this.mainWindow, {
         title: 'Select GoodReads CSV File',
         properties: ['openFile'],
@@ -85,6 +87,11 @@ class ElectronApp {
       }
 
       return filePaths[0];
+    });
+
+    // Clear CSV cache so re-processing the same file reads fresh data from disk
+    ipcMain.handle('clear-csv-cache', () => {
+      GoodreadsCSVService.clearCache();
     });
 
     // Handle book weighting process

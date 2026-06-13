@@ -538,6 +538,9 @@ class BookWeightingGUI {
   }
 
   resetToStart() {
+    // Clear CSV cache so re-selecting the same file re-reads from disk
+    ipcRenderer.invoke('clear-csv-cache').catch(() => {});
+
     // Reset state
     this.selectedFilePath = null;
     this.results = null;
