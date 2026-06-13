@@ -1,3 +1,10 @@
+## [1.7.6](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.5...v1.7.6) (2026-06-13)
+
+
+### Bug Fixes
+
+* file dialog opens behind window and stale CSV cache after Process Another File ([29cf159](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/29cf15959e9626b44ffcfb87cc7252964e49c9f3)), closes [#145](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/145)
+
 ## [1.7.5](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.4...v1.7.5) (2026-06-08)
 
 
