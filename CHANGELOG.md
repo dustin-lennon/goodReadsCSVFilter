@@ -1,3 +1,10 @@
+## [1.7.7](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.6...v1.7.7) (2026-06-16)
+
+
+### Bug Fixes
+
+* redirect electron-builder output to APFS temp dir on ExFAT volumes ([cd742d4](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/cd742d41a8a3e7448c267e2e10e276f513fbc1d2))
+
 ## [1.7.6](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.5...v1.7.6) (2026-06-13)
 
 
