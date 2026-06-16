@@ -42,6 +42,13 @@ tests/
 - **Curated Reading sheet**: only first books, next-in-series, and standalones (no mid-series clutter)
 - **Progressive series**: "SAO: Progressive" must be finished before main "SAO" series unlocks
 
+## Feature Specs
+
+Detailed specs for individual features live in root-level docs:
+
+- `PROGRESSIVE_SERIES.md` — Progressive-series reading-order handling (e.g. SAO: Progressive)
+- `SERIES_RECAP.md` — Spoiler-bounded "catch me up" series recap; series-level sibling of `BookChatService`, consumes `SeriesProgress`, planned as `SeriesRecapService`
+
 ## Development Commands
 
 ```bash
