@@ -81,14 +81,19 @@ buildGuiProcess.on('close', (guiCode) => {
     }
     
     console.log('\n🔨 Building executable with electron-builder...');
-    // Use shell: true to ensure pnpm is found in PATH (especially on Windows in CI)
-    const buildProcess = spawn('pnpm', ['exec', 'electron-builder', '--publish', 'never'], {
+    // Build to a system temp dir (APFS) to avoid ExFAT asar integrity failures.
+    // Artifacts are copied to dist-executable/ after a successful build.
+    const tmpBuildDir = require('os').tmpdir() + '/goodreads-build';
+    const buildProcess = spawn('pnpm', [
+        'exec', 'electron-builder', '--publish', 'never',
+        `--config.directories.output=${tmpBuildDir}`
+    ], {
         stdio: 'inherit',
         cwd: process.cwd(),
         shell: true
     });
     
-    handleBuildProcess(buildProcess);
+    handleBuildProcess(buildProcess, tmpBuildDir);
 });
 
 buildGuiProcess.on('error', (err) => {
@@ -97,16 +102,28 @@ buildGuiProcess.on('error', (err) => {
     process.exit(1);
 });
 
-function handleBuildProcess(buildProcess) {
+function handleBuildProcess(buildProcess, tmpBuildDir) {
 
     buildProcess.on('close', (code) => {
         if (code === 0) {
+            // Copy artifacts from temp dir to dist-executable/
+            const distPath = path.join(process.cwd(), 'dist-executable');
+            if (!fs.existsSync(distPath)) fs.mkdirSync(distPath, { recursive: true });
+            if (tmpBuildDir && fs.existsSync(tmpBuildDir)) {
+                const tmpFiles = fs.readdirSync(tmpBuildDir);
+                tmpFiles
+                    .filter(f => f.endsWith('.dmg') || f.endsWith('.dmg.blockmap') ||
+                                 f.endsWith('.exe') || f.endsWith('.AppImage') ||
+                                 f === 'latest-mac.yml' || f === 'latest.yml' ||
+                                 f === 'builder-debug.yml' || f === 'builder-effective-config.yaml')
+                    .forEach(f => fs.copyFileSync(path.join(tmpBuildDir, f), path.join(distPath, f)));
+            }
+
             console.log('\n✅ Build successful!');
             console.log('\n📂 Executable created in:');
             console.log('   ./dist-executable/');
-            
+
             // List created files and verify versions
-            const distPath = path.join(process.cwd(), 'dist-executable');
             if (fs.existsSync(distPath)) {
                 const files = fs.readdirSync(distPath);
                 const executables = files.filter(f => f.endsWith('.dmg') || f.endsWith('.exe') || f.endsWith('.AppImage'));
