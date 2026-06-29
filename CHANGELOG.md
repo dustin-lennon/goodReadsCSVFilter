@@ -1,3 +1,10 @@
+## [1.7.8](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.7...v1.7.8) (2026-06-29)
+
+
+### Bug Fixes
+
+* **llm:** include author in series detection prompt ([eb05348](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/eb05348eadcafbce1627a741ba3be3816f122ee9)), closes [#158](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/158)
+
 ## [1.7.7](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.6...v1.7.7) (2026-06-16)
 
 
