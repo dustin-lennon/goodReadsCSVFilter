@@ -111,11 +111,14 @@ function handleBuildProcess(buildProcess, tmpBuildDir) {
             if (!fs.existsSync(distPath)) fs.mkdirSync(distPath, { recursive: true });
             if (tmpBuildDir && fs.existsSync(tmpBuildDir)) {
                 const tmpFiles = fs.readdirSync(tmpBuildDir);
+                const versionedExts = ['.dmg', '.dmg.blockmap', '.exe', '.AppImage'];
+                const unversionedFiles = ['latest-mac.yml', 'latest.yml', 'builder-debug.yml', 'builder-effective-config.yaml'];
                 tmpFiles
-                    .filter(f => f.endsWith('.dmg') || f.endsWith('.dmg.blockmap') ||
-                                 f.endsWith('.exe') || f.endsWith('.AppImage') ||
-                                 f === 'latest-mac.yml' || f === 'latest.yml' ||
-                                 f === 'builder-debug.yml' || f === 'builder-effective-config.yaml')
+                    .filter(f => {
+                        if (unversionedFiles.includes(f)) return true;
+                        const isVersionedArtifact = versionedExts.some(ext => f.endsWith(ext));
+                        return isVersionedArtifact && (!currentVersion || f.includes(currentVersion));
+                    })
                     .forEach(f => fs.copyFileSync(path.join(tmpBuildDir, f), path.join(distPath, f)));
             }
 
