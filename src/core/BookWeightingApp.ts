@@ -95,7 +95,7 @@ export class BookWeightingApp {
             const info = SeriesDetector.extractSeriesInfo(b.Title);
             return !info.seriesName;
           })
-          .map((b) => b.Title);
+          .map((b) => ({ title: b.Title, author: b.Author }));
 
         if (needsLLM.length > 0) {
           progressCallback?.(
