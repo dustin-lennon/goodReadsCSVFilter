@@ -43,7 +43,7 @@ export class LLMSeriesDetectionService {
    * Ask Claude to extract series name and book number from a title.
    * Result is cached persistently — each title only calls the API once.
    */
-  static async extractSeriesInfo(title: string): Promise<SeriesInfo> {
+  static async extractSeriesInfo(title: string, author?: string): Promise<SeriesInfo> {
     const cache = this.loadCache();
 
     if (cache.has(title)) {
@@ -57,6 +57,8 @@ export class LLMSeriesDetectionService {
 
     const client = new Anthropic({ apiKey });
 
+    const authorLine = author ? `Author: "${author}"\n` : '';
+
     try {
       const message = await client.messages.create({
         model: 'claude-haiku-4-5-20251001',
@@ -68,7 +70,7 @@ export class LLMSeriesDetectionService {
             role: 'user',
             content: `What series is this book part of, and what is its number in the series?
 Title: "${title}"
-
+${authorLine}
 Respond with JSON only:
 {"seriesName": string or null, "bookNumber": number or null}
 
@@ -96,25 +98,25 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
   }
 
   /**
-   * Batch-process a list of titles, returning only the ones with newly-detected series info.
+   * Batch-process a list of books, returning only the ones with newly-detected series info.
    * Skips titles already in cache or that already have series info from regex.
    */
   static async enrichMissingSeriesInfo(
-    titlesWithNoInfo: string[],
+    booksWithNoInfo: { title: string; author: string }[],
     onProgress?: (done: number, total: number) => void,
   ): Promise<Map<string, SeriesInfo>> {
     const results = new Map<string, SeriesInfo>();
-    const uncached = titlesWithNoInfo.filter((t) => !this.loadCache().has(t));
+    const uncached = booksWithNoInfo.filter((b) => !this.loadCache().has(b.title));
 
     for (let i = 0; i < uncached.length; i++) {
-      const title = uncached[i];
-      const info = await this.extractSeriesInfo(title);
+      const { title, author } = uncached[i];
+      const info = await this.extractSeriesInfo(title, author);
       if (info.seriesName) results.set(title, info);
       onProgress?.(i + 1, uncached.length);
     }
 
     // Also pull from cache for already-cached entries
-    for (const title of titlesWithNoInfo) {
+    for (const { title } of booksWithNoInfo) {
       if (!results.has(title)) {
         const cached = this.loadCache().get(title);
         if (cached?.seriesName) results.set(title, cached);
