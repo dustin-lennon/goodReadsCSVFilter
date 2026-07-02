@@ -8,6 +8,7 @@ import {
 } from '../core/types';
 import { GoodreadsCSVService } from './GoodreadsCSVService';
 import { SeriesDetector } from '../core/SeriesDetector';
+import { LLMSeriesDetectionService } from './LLMSeriesDetectionService';
 
 /**
  * Service for generating series progression timeline
@@ -18,6 +19,17 @@ export class SeriesProgressionTimelineService {
    */
   static async generateTimeline(csvFilePath: string): Promise<SeriesProgressionTimeline> {
     const allBooks = await GoodreadsCSVService.readAllBooks(csvFilePath);
+
+    // Enrich series info for books whose titles lack series metadata
+    if (LLMSeriesDetectionService.isAvailable()) {
+      const needsLLM = allBooks
+        .filter((b) => !SeriesDetector.extractSeriesInfo(b.Title).seriesName)
+        .map((b) => ({ title: b.Title, author: b.Author }));
+      if (needsLLM.length > 0) {
+        const overrides = await LLMSeriesDetectionService.enrichMissingSeriesInfo(needsLLM);
+        SeriesDetector.setLLMOverrides(overrides);
+      }
+    }
 
     // Group books by series
     const seriesMap = new Map<string, SeriesProgress>();
