@@ -1,3 +1,11 @@
+## [1.7.10](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.9...v1.7.10) (2026-07-02)
+
+
+### Bug Fixes
+
+* filter stale versioned artifacts when copying from temp build dir ([#164](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/164)) ([1e13818](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1e13818327e6c89fc0d628495505f051bde11917)), closes [#163](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/163)
+* **timeline:** apply LLM series overrides before processing books ([#168](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/168)) ([c635faf](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/c635faf9bf174ea72b8cac877db1081c1a731fa3)), closes [#164](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/164) [#165](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/165) [#163](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/163) [#167](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/167)
+
 ## [1.7.9](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.8...v1.7.9) (2026-06-29)
 
 
