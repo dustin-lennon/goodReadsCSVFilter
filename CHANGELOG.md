@@ -1,3 +1,11 @@
+## [1.7.11](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.10...v1.7.11) (2026-07-04)
+
+
+### Bug Fixes
+
+* **timeline:** count series as started when [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1) read despite unread sub-[#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1) prequel ([28253d3](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/28253d3dc1e81504fb2d18555d95f0f8f96364ff)), closes [#174](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/174)
+* **timeline:** merge alias series names so aliased books are not dropped ([5d7b7e1](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/5d7b7e111852de87a78dd9067c5e955be24829f9)), closes [#176](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/176)
+
 ## [1.7.10](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.9...v1.7.10) (2026-07-02)
 
 
