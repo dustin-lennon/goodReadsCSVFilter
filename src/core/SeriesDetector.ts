@@ -132,7 +132,9 @@ export class SeriesDetector {
    * Normalize author name for consistent comparison
    */
   static normalizeAuthor(author: string): string {
-    return author.trim().toLowerCase().replace(/\s+/g, ' ');
+    // Drop periods so initials match regardless of punctuation
+    // (e.g. "E. Lockhart" and "E Lockhart" are the same author).
+    return author.trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
   }
 
   /**

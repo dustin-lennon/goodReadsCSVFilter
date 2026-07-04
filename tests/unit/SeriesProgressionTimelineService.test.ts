@@ -538,5 +538,120 @@ describe('SeriesProgressionTimelineService', () => {
       );
       expect(mistbornSeries).toHaveLength(2);
     });
+
+    it('should collapse duplicate editions of the same book, preferring the read copy', async () => {
+      // GoodReads shelves two editions of "Family of Liars" with different series
+      // numbers (#0 to-read + #2 read). They must collapse to one read entry, not two.
+      const mockBooks: Book[] = [
+        {
+          Title: 'Family of Liars (We Were Liars, #2)',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/10/19',
+          'Original Publication Year': '2022',
+        },
+        {
+          Title: 'Family of Liars (We Were Liars #0)',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+          'Original Publication Year': '2022',
+        },
+        {
+          Title: 'The Once (We Were Liars, #3)',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+          'Original Publication Year': '2025',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      const series = result.series.find((s) => s.seriesName === 'We Were Liars');
+      expect(series).toBeDefined();
+      // One "Family of Liars" entry, not two
+      const familyBooks = series!.books.filter((b) => b.title.startsWith('Family of Liars'));
+      expect(familyBooks).toHaveLength(1);
+      expect(familyBooks[0].status).toBe(BookProgressStatus.READ);
+      expect(familyBooks[0].bookNumber).toBe(2);
+    });
+
+    it('should rescue a bare-title book into a matching series and infer #1 by pub year', async () => {
+      // "We Were Liars" has no series tag but matches the series name; it is the
+      // earliest-published book, so it becomes #1.
+      const mockBooks: Book[] = [
+        {
+          Title: 'We Were Liars',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/10/12',
+          'Original Publication Year': '2014',
+        },
+        {
+          Title: 'Family of Liars (We Were Liars, #2)',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+          'Original Publication Year': '2022',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      const series = result.series.find((s) => s.seriesName === 'We Were Liars');
+      expect(series).toBeDefined();
+      const book1 = series!.books.find((b) => b.bookNumber === 1);
+      expect(book1?.title).toBe('We Were Liars');
+      expect(book1?.status).toBe(BookProgressStatus.READ);
+    });
+
+    it('should rescue a companion-subtitle book and match authors regardless of initials punctuation', async () => {
+      // "We Fell Apart: A We Were Liars Novel" is mis-detected as its own series and
+      // is credited to "E Lockhart" (no period). It must still fold into the series.
+      const mockBooks: Book[] = [
+        {
+          Title: 'We Were Liars',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/10/12',
+          'Original Publication Year': '2014',
+        },
+        {
+          Title: 'Family of Liars (We Were Liars, #2)',
+          Author: 'E. Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/10/19',
+          'Original Publication Year': '2022',
+        },
+        {
+          Title: 'We Fell Apart: A We Were Liars Novel',
+          Author: 'E Lockhart',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+          'Original Publication Year': '2025',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      const series = result.series.find((s) => s.seriesName === 'We Were Liars');
+      expect(series).toBeDefined();
+      // All three books present under one series
+      expect(series!.books.map((b) => b.bookNumber).sort((a, b) => a - b)).toEqual([1, 2, 3]);
+      const book3 = series!.books.find((b) => b.bookNumber === 3);
+      expect(book3?.title).toBe('We Fell Apart: A We Were Liars Novel');
+      expect(book3?.status).toBe(BookProgressStatus.TO_READ);
+    });
   });
 });
