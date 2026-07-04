@@ -96,6 +96,15 @@ describe('SeriesDetector', () => {
       expect(SeriesDetector.normalizeAuthor('  James   Patterson  ')).toBe('james patterson');
       expect(SeriesDetector.normalizeAuthor('JAMES PATTERSON')).toBe('james patterson');
     });
+
+    it('should treat initials the same with or without periods', () => {
+      // "E. Lockhart" and "E Lockhart" are the same author
+      expect(SeriesDetector.normalizeAuthor('E. Lockhart')).toBe('e lockhart');
+      expect(SeriesDetector.normalizeAuthor('E Lockhart')).toBe('e lockhart');
+      expect(SeriesDetector.normalizeAuthor('E. Lockhart')).toBe(
+        SeriesDetector.normalizeAuthor('E Lockhart'),
+      );
+    });
   });
 });
 

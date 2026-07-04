@@ -457,6 +457,20 @@ export class SeriesProgressionTimelineService {
       }
     }
 
+    // Fourth-and-a-half pass: collapse duplicate editions of the same book.
+    // GoodReads can shelve two editions of one book under different series numbers
+    // (e.g. "Family of Liars (We Were Liars, #2)" read + "Family of Liars
+    // (We Were Liars #0)" to-read). Merge same-title books within a series into one
+    // entry, keeping the most-progressed copy so a read book is never shown as unread.
+    this.dedupeSeriesBooksByTitle(seriesMap);
+
+    // Fourth-and-three-quarters pass: rescue bare-title books whose title matches a
+    // series name by the same author. GoodReads sometimes omits the series tag on the
+    // flagship book (e.g. "We Were Liars" with no "(We Were Liars, #1)"), and the LLM
+    // cannot disambiguate a title identical to its series name. Fold it into the
+    // matching series, inferring its number from publication year.
+    this.rescueBareTitleBooks(seriesMap, allBooks);
+
     // Fifth pass: merge alias series names (GoodReads inconsistency).
     // GoodReads sometimes exports the same series under a longer/variant name
     // (e.g. "Freaks (Jane Rizzoli & Maura Isles, #8.5)" vs the canonical
@@ -667,5 +681,159 @@ export class SeriesProgressionTimelineService {
     ) {
       target.currentBookNumber = source.currentBookNumber;
     }
+  }
+
+  /** A book title with any trailing parenthetical (series tag) stripped, lowercased. */
+  private static normalizeBookTitle(title: string): string {
+    return title
+      .replace(/\s*\([^)]*\)\s*$/, '')
+      .trim()
+      .toLowerCase();
+  }
+
+  /** Reading-progress rank; higher wins when collapsing duplicate editions. */
+  private static statusRank(status: BookProgressStatus): number {
+    switch (status) {
+      case BookProgressStatus.CURRENTLY_READING:
+        return 4;
+      case BookProgressStatus.READING_NEXT:
+        return 3;
+      case BookProgressStatus.READ:
+        return 2;
+      case BookProgressStatus.TO_READ:
+        return 1;
+      default:
+        return 0;
+    }
+  }
+
+  /** Publication year of a book (original preferred), or 9999 when unknown. */
+  private static pubYearOf(book: Book): number {
+    const raw = book['Original Publication Year'] || book['Year Published'];
+    const year = raw ? parseInt(raw) : NaN;
+    return Number.isNaN(year) ? 9999 : year;
+  }
+
+  /**
+   * Collapse books that share a normalized title within each series, keeping the
+   * most-progressed copy. Handles GoodReads shelving two editions of one book under
+   * different series numbers (e.g. Family of Liars as both #0 and #2).
+   */
+  private static dedupeSeriesBooksByTitle(seriesMap: Map<string, SeriesProgress>): void {
+    for (const series of seriesMap.values()) {
+      const byTitle = new Map<string, BookProgress>();
+      for (const book of series.books) {
+        const key = this.normalizeBookTitle(book.title);
+        const existing = byTitle.get(key);
+        if (!existing || this.statusRank(book.status) > this.statusRank(existing.status)) {
+          byTitle.set(key, book);
+        }
+      }
+      series.books = [...byTitle.values()];
+      series.highestBookNumber = series.books.reduce((m, b) => Math.max(m, b.bookNumber), 0);
+    }
+  }
+
+  /**
+   * Fold bare-title books (no series tag detected) into a same-author series whose
+   * name appears in the title, inferring the book number from publication year.
+   * Matching on "contains" (not just equals) also catches companion titles such as
+   * "We Fell Apart: A We Were Liars Novel". The longest matching series name wins so
+   * the most specific series is chosen when several could match.
+   */
+  private static rescueBareTitleBooks(
+    seriesMap: Map<string, SeriesProgress>,
+    allBooks: Book[],
+  ): void {
+    for (const book of allBooks) {
+      const titleKey = this.normalizeBookTitle(book.Title);
+      const normalizedAuthor = SeriesDetector.normalizeAuthor(book.Author);
+
+      // Skip books already grouped into a series (via an explicit tag). Titles are
+      // compared with their series parenthetical stripped, so a normally-tagged book
+      // like "The Goodbye Man (Colter Shaw, #2)" is recognized as already placed.
+      const alreadyGrouped = [...seriesMap.values()].some(
+        (s) =>
+          s.normalizedAuthor === normalizedAuthor &&
+          s.books.some((b) => this.normalizeBookTitle(b.title) === titleKey),
+      );
+      if (alreadyGrouped) continue;
+
+      // Fold into the series whose name appears in the (tag-stripped) title. Longest
+      // series name wins so the most specific series is chosen.
+      const target = [...seriesMap.values()]
+        .filter(
+          (s) =>
+            s.normalizedAuthor === normalizedAuthor &&
+            titleKey.includes(s.seriesName.toLowerCase()),
+        )
+        .sort((a, b) => b.seriesName.length - a.seriesName.length)[0];
+      if (!target) continue;
+
+      // Already present (or a re-run) — do not double-add
+      if (target.books.some((b) => this.normalizeBookTitle(b.title) === titleKey)) continue;
+
+      const shelf = book['Exclusive Shelf']?.trim().toLowerCase();
+      let status: BookProgressStatus;
+      let dateRead: Date | undefined;
+      if (shelf === ShelfType.READ) {
+        status = BookProgressStatus.READ;
+        if (book['Date Read']) dateRead = new Date(book['Date Read']);
+      } else if (shelf === ShelfType.CURRENTLY_READING) {
+        status = BookProgressStatus.CURRENTLY_READING;
+      } else if (shelf === ShelfType.READING_NEXT) {
+        status = BookProgressStatus.READING_NEXT;
+      } else if (shelf === ShelfType.TO_READ) {
+        status = BookProgressStatus.TO_READ;
+      } else {
+        status = BookProgressStatus.NOT_STARTED;
+      }
+
+      const assignedNumber = this.inferBareTitleNumber(target, this.pubYearOf(book), allBooks);
+
+      target.books.push({
+        title: book.Title,
+        bookNumber: assignedNumber,
+        status,
+        dateRead,
+        author: book.Author,
+      });
+      if (assignedNumber > target.highestBookNumber) {
+        target.highestBookNumber = assignedNumber;
+      }
+      if (
+        status === BookProgressStatus.CURRENTLY_READING &&
+        (target.currentBookNumber === undefined || assignedNumber < target.currentBookNumber)
+      ) {
+        target.currentBookNumber = assignedNumber;
+      }
+    }
+  }
+
+  /**
+   * Infer a book number for a bare-title book. If it is the earliest-published book
+   * in the series and #1 is free, it is the flagship first book; otherwise take the
+   * smallest free positive integer.
+   */
+  private static inferBareTitleNumber(
+    series: SeriesProgress,
+    pubYear: number,
+    allBooks: Book[],
+  ): number {
+    const usedNumbers = new Set(series.books.map((b) => b.bookNumber));
+
+    const existingPubYears = series.books.map((b) => {
+      const orig = allBooks.find((bk) => bk.Title === b.title);
+      return orig ? this.pubYearOf(orig) : 9999;
+    });
+    const minExistingPub = existingPubYears.length ? Math.min(...existingPubYears) : Infinity;
+
+    if (pubYear <= minExistingPub && !usedNumbers.has(1)) {
+      return 1;
+    }
+
+    let n = 1;
+    while (usedNumbers.has(n)) n++;
+    return n;
   }
 }
