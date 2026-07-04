@@ -1,3 +1,10 @@
+## [1.7.12](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.11...v1.7.12) (2026-07-04)
+
+
+### Bug Fixes
+
+* **timeline:** repair messy multi-edition series grouping (We Were Liars) ([1e81cb6](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1e81cb6180f8cb37495eb84d437ac25a5a913f75)), closes [#0](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/0) [#2](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/2) [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1) [#2](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/2) [#3](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/3) [#180](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/180)
+
 ## [1.7.11](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.10...v1.7.11) (2026-07-04)
 
 
