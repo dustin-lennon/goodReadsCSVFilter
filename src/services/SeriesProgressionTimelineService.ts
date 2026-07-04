@@ -472,18 +472,26 @@ export class SeriesProgressionTimelineService {
         continue;
       }
 
-      // Find the first book in the series — always use the lowest book number.
-      // Do NOT prefer book #1 specifically: series with prequels numbered 0.1, 0.2, etc.
-      // (e.g. Practical Magic) have a lower-numbered first book that must be started.
+      // A series counts as "started" if the reader has begun it from an entry point.
+      // Two valid entry points, because GoodReads numbers optional prequel novellas
+      // below #1 (e.g. 0.1, 0.5):
+      //   1. the lowest-numbered book overall (covers series whose canonical start is a
+      //      sub-#1 prequel that was actually read, e.g. Practical Magic #0.1), OR
+      //   2. the first main book (lowest book with number >= 1) — so reading the #1 novel
+      //      counts even when a fractional prequel (e.g. Colter Shaw #0.5) is still to-read.
+      // This still hides series the reader jumped into mid-run (e.g. read #5 but not #1).
+      const isStarted = (b: BookProgress | undefined): boolean =>
+        !!b &&
+        (b.status === BookProgressStatus.READ ||
+          b.status === BookProgressStatus.CURRENTLY_READING ||
+          b.status === BookProgressStatus.READING_NEXT);
+
       const firstBook = series.books[0]; // books already sorted ascending by book number above
+      const firstMainBook = series.books.find((b) => b.bookNumber >= 1);
 
-      const hasStartedSeries =
-        firstBook &&
-        (firstBook.status === BookProgressStatus.READ ||
-          firstBook.status === BookProgressStatus.CURRENTLY_READING ||
-          firstBook.status === BookProgressStatus.READING_NEXT);
+      const hasStartedSeries = isStarted(firstBook) || isStarted(firstMainBook);
 
-      // Skip series that haven't been started (first book not read/started)
+      // Skip series that haven't been started (no valid entry point read/started)
       if (!hasStartedSeries) {
         continue;
       }
