@@ -392,5 +392,151 @@ describe('SeriesProgressionTimelineService', () => {
       // Ensure completion percentage never exceeds 100%
       expect(series.completionPercentage).toBeLessThanOrEqual(100);
     });
+
+    it('should show a series when the #1 book is read but a sub-#1 prequel is unread', async () => {
+      // Colter Shaw: prequel novella #0.5 is the lowest-numbered book and still to-read,
+      // but the main entry #1 has been read. The series must still appear.
+      const mockBooks: Book[] = [
+        {
+          Title: 'Captivated (Colter Shaw, #0.5)',
+          Author: 'Jeffery Deaver',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+        {
+          Title: 'The Never Game (Colter Shaw, #1)',
+          Author: 'Jeffery Deaver',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/08/21',
+        },
+        {
+          Title: 'The Goodbye Man (Colter Shaw, #2)',
+          Author: 'Jeffery Deaver',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      const colterShaw = result.series.find((s) => s.seriesName === 'Colter Shaw');
+      expect(colterShaw).toBeDefined();
+      expect(colterShaw?.booksRead).toBe(1);
+    });
+
+    it('should still hide series the reader jumped into mid-run', async () => {
+      // Only book #5 read, #1 never started → not a real "start", must stay hidden.
+      const mockBooks: Book[] = [
+        {
+          Title: 'Book 1 (Jumped Series, #1)',
+          Author: 'Some Author',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+        {
+          Title: 'Book 5 (Jumped Series, #5)',
+          Author: 'Some Author',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/01/01',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      expect(result.series.find((s) => s.seriesName === 'Jumped Series')).toBeUndefined();
+    });
+
+    it('should merge an alias series name into its canonical series', async () => {
+      // GoodReads names one book "Jane Rizzoli & Maura Isles" while the rest are
+      // "Rizzoli & Isles". Freaks (#8.5) must fold into the main series, not vanish.
+      const mockBooks: Book[] = [
+        {
+          Title: 'The Surgeon (Rizzoli & Isles, #1)',
+          Author: 'Tess Gerritsen',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/06/01',
+        },
+        {
+          Title: 'Ice Cold (Rizzoli & Isles, #8)',
+          Author: 'Tess Gerritsen',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2026/02/01',
+        },
+        {
+          Title: 'Freaks (Jane Rizzoli & Maura Isles, #8.5)',
+          Author: 'Tess Gerritsen',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2026/07/03',
+        },
+        {
+          Title: 'The Silent Girl (Rizzoli & Isles, #9)',
+          Author: 'Tess Gerritsen',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      // Only one Rizzoli series, and it contains the #8.5 alias book
+      const rizzoli = result.series.filter((s) => s.seriesName.toLowerCase().includes('rizzoli'));
+      expect(rizzoli).toHaveLength(1);
+      expect(rizzoli[0].seriesName).toBe('Rizzoli & Isles');
+      expect(rizzoli[0].books.some((b) => b.bookNumber === 8.5)).toBe(true);
+      expect(rizzoli[0].books.some((b) => b.title.includes('Freaks'))).toBe(true);
+    });
+
+    it('should NOT merge same-author sub-series that share only one significant token', async () => {
+      // "Mistborn" vs "Mistborn: Wax & Wayne" share only the token "mistborn".
+      // The 2-token guard must keep them as distinct series.
+      const mockBooks: Book[] = [
+        {
+          Title: 'The Final Empire (Mistborn, #1)',
+          Author: 'Brandon Sanderson',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/01/01',
+        },
+        {
+          Title: 'The Well of Ascension (Mistborn, #2)',
+          Author: 'Brandon Sanderson',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+        {
+          Title: 'The Alloy of Law (Mistborn: Wax & Wayne, #1)',
+          Author: 'Brandon Sanderson',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/03/01',
+        },
+        {
+          Title: 'Shadows of Self (Mistborn: Wax & Wayne, #2)',
+          Author: 'Brandon Sanderson',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      const mistbornSeries = result.series.filter((s) =>
+        s.seriesName.toLowerCase().includes('mistborn'),
+      );
+      expect(mistbornSeries).toHaveLength(2);
+    });
   });
 });
