@@ -457,6 +457,19 @@ export class SeriesProgressionTimelineService {
       }
     }
 
+    // Fifth pass: merge alias series names (GoodReads inconsistency).
+    // GoodReads sometimes exports the same series under a longer/variant name
+    // (e.g. "Freaks (Jane Rizzoli & Maura Isles, #8.5)" vs the canonical
+    // "Rizzoli & Isles"). Left un-merged, the odd-one-out lands in its own
+    // single-book series and is dropped as "completed", so its book vanishes.
+    //
+    // Guarded token-subset rule: two series by the SAME author merge only when
+    // every significant token of the shorter name appears in the longer name AND
+    // they share at least 2 significant tokens. The 2-token guard prevents false
+    // merges of single-distinctive-token sub-series (e.g. "Mistborn" vs
+    // "Mistborn: Wax & Wayne"). The series with more books is treated as canonical.
+    this.mergeAliasSeries(seriesMap);
+
     // Process each series to calculate statistics
     const seriesArray: SeriesProgress[] = [];
     let totalBooksRead = 0;
@@ -557,5 +570,102 @@ export class SeriesProgressionTimelineService {
       totalBooksRead: totalBooksRead,
       totalBooksInProgress: totalBooksInProgress,
     };
+  }
+
+  // Connector/filler words that carry no series-identity signal.
+  private static readonly SERIES_STOPWORDS = new Set([
+    'the',
+    'a',
+    'an',
+    'and',
+    'of',
+    'series',
+    'saga',
+    'chronicles',
+    'trilogy',
+    'cycle',
+    'novel',
+    'novels',
+    'book',
+    'books',
+  ]);
+
+  /**
+   * Significant, lowercased word tokens of a series name (stopwords + punctuation removed).
+   * "Jane Rizzoli & Maura Isles" -> {jane, rizzoli, maura, isles}
+   */
+  private static significantTokens(name: string): Set<string> {
+    return new Set(
+      name
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter((t) => t.length > 0 && !this.SERIES_STOPWORDS.has(t)),
+    );
+  }
+
+  /**
+   * Merge alias series names in place. Two same-author series merge when the
+   * shorter name's significant tokens are all contained in the longer name and
+   * they share at least 2 significant tokens; books fold into the series with
+   * more books (canonical). See the fifth-pass comment in generateTimeline.
+   */
+  private static mergeAliasSeries(seriesMap: Map<string, SeriesProgress>): void {
+    const entries = [...seriesMap.entries()];
+
+    for (let i = 0; i < entries.length; i++) {
+      for (let j = i + 1; j < entries.length; j++) {
+        const [keyA, a] = entries[i];
+        const [keyB, b] = entries[j];
+
+        // Skip if either was already merged away in an earlier iteration
+        if (!seriesMap.has(keyA) || !seriesMap.has(keyB)) continue;
+        if (a.normalizedAuthor !== b.normalizedAuthor) continue;
+
+        const tokA = this.significantTokens(a.seriesName);
+        const tokB = this.significantTokens(b.seriesName);
+        const [smaller, larger] = tokA.size <= tokB.size ? [tokA, tokB] : [tokB, tokA];
+
+        const shared = [...smaller].filter((t) => larger.has(t));
+        const isSubset = shared.length === smaller.size;
+        if (!isSubset || shared.length < 2) continue;
+
+        // Canonical = more books; fold the other into it
+        const [canonicalKey, canonical, otherKey, other] =
+          a.books.length >= b.books.length ? [keyA, a, keyB, b] : [keyB, b, keyA, a];
+
+        this.foldSeries(canonical, other);
+        seriesMap.delete(otherKey);
+        // Keep the entries array in sync so canonical's grown book list is seen
+        entries[a.books.length >= b.books.length ? i : j] = [canonicalKey, canonical];
+      }
+    }
+  }
+
+  /** Fold source series' books into target, adding only book numbers target lacks. */
+  private static foldSeries(target: SeriesProgress, source: SeriesProgress): void {
+    for (const book of source.books) {
+      const existing = target.books.find((b) => b.bookNumber === book.bookNumber);
+      if (!existing) {
+        target.books.push(book);
+        if (book.bookNumber > target.highestBookNumber) {
+          target.highestBookNumber = book.bookNumber;
+        }
+      } else if (
+        book.status === BookProgressStatus.READ &&
+        existing.status === BookProgressStatus.TO_READ
+      ) {
+        // Prefer the more-progressed copy when both aliases list the same number
+        existing.status = book.status;
+        existing.dateRead = book.dateRead;
+      }
+    }
+
+    if (
+      source.currentBookNumber !== undefined &&
+      (target.currentBookNumber === undefined ||
+        source.currentBookNumber < target.currentBookNumber)
+    ) {
+      target.currentBookNumber = source.currentBookNumber;
+    }
   }
 }
