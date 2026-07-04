@@ -392,5 +392,64 @@ describe('SeriesProgressionTimelineService', () => {
       // Ensure completion percentage never exceeds 100%
       expect(series.completionPercentage).toBeLessThanOrEqual(100);
     });
+
+    it('should show a series when the #1 book is read but a sub-#1 prequel is unread', async () => {
+      // Colter Shaw: prequel novella #0.5 is the lowest-numbered book and still to-read,
+      // but the main entry #1 has been read. The series must still appear.
+      const mockBooks: Book[] = [
+        {
+          Title: 'Captivated (Colter Shaw, #0.5)',
+          Author: 'Jeffery Deaver',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+        {
+          Title: 'The Never Game (Colter Shaw, #1)',
+          Author: 'Jeffery Deaver',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/08/21',
+        },
+        {
+          Title: 'The Goodbye Man (Colter Shaw, #2)',
+          Author: 'Jeffery Deaver',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      const colterShaw = result.series.find((s) => s.seriesName === 'Colter Shaw');
+      expect(colterShaw).toBeDefined();
+      expect(colterShaw?.booksRead).toBe(1);
+    });
+
+    it('should still hide series the reader jumped into mid-run', async () => {
+      // Only book #5 read, #1 never started → not a real "start", must stay hidden.
+      const mockBooks: Book[] = [
+        {
+          Title: 'Book 1 (Jumped Series, #1)',
+          Author: 'Some Author',
+          Bookshelves: '',
+          'Exclusive Shelf': 'to-read',
+        },
+        {
+          Title: 'Book 5 (Jumped Series, #5)',
+          Author: 'Some Author',
+          Bookshelves: '',
+          'Exclusive Shelf': 'read',
+          'Date Read': '2025/01/01',
+        },
+      ];
+
+      mockReadAllBooks.mockResolvedValue(mockBooks);
+
+      const result = await SeriesProgressionTimelineService.generateTimeline('fake-path.csv');
+
+      expect(result.series.find((s) => s.seriesName === 'Jumped Series')).toBeUndefined();
+    });
   });
 });
