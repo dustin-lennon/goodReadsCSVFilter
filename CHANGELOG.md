@@ -1,3 +1,10 @@
+## [1.7.13](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.12...v1.7.13) (2026-07-09)
+
+
+### Bug Fixes
+
+* **llm-cache:** key cache by title+author to prevent stale null suppression ([5b7a0a7](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/5b7a0a7265df1023d4ad87ea6081cd824b2cf381)), closes [#2](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/2)
+
 ## [1.7.12](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.11...v1.7.12) (2026-07-04)
 
 
