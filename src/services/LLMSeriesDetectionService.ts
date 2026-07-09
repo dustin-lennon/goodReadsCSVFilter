@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { SeriesInfo } from '../core/types';
 import { AppSettingsService } from './AppSettingsService';
+import { SeriesDetector } from '../core/SeriesDetector';
 import { getWritablePath } from '../utils/pathResolver';
 
 const CACHE_FILE = getWritablePath('llm-series-cache.json');
@@ -10,6 +11,13 @@ type CacheEntry = { seriesName: string | null; bookNumber: number | undefined };
 
 export class LLMSeriesDetectionService {
   private static cache: Map<string, CacheEntry> | null = null;
+
+  // Cache key includes author so stale null entries from author-less queries
+  // don't suppress re-queries that now include author context.
+  static cacheKey(title: string, author?: string): string {
+    const normalizedAuthor = author ? SeriesDetector.normalizeAuthor(author) : '';
+    return `${title}|${normalizedAuthor}`;
+  }
 
   private static loadCache(): Map<string, CacheEntry> {
     if (this.cache) return this.cache;
@@ -45,9 +53,10 @@ export class LLMSeriesDetectionService {
    */
   static async extractSeriesInfo(title: string, author?: string): Promise<SeriesInfo> {
     const cache = this.loadCache();
+    const key = this.cacheKey(title, author);
 
-    if (cache.has(title)) {
-      return cache.get(title)!;
+    if (cache.has(key)) {
+      return cache.get(key)!;
     }
 
     const apiKey = AppSettingsService.getAnthropicApiKey();
@@ -86,12 +95,12 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
         bookNumber: parsed.bookNumber ?? undefined,
       };
 
-      cache.set(title, result);
+      cache.set(key, result);
       this.persistCache();
       return result;
     } catch {
       const fallback: CacheEntry = { seriesName: null, bookNumber: undefined };
-      cache.set(title, fallback);
+      cache.set(key, fallback);
       this.persistCache();
       return fallback;
     }
@@ -106,7 +115,9 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
     onProgress?: (done: number, total: number) => void,
   ): Promise<Map<string, SeriesInfo>> {
     const results = new Map<string, SeriesInfo>();
-    const uncached = booksWithNoInfo.filter((b) => !this.loadCache().has(b.title));
+    const uncached = booksWithNoInfo.filter(
+      (b) => !this.loadCache().has(this.cacheKey(b.title, b.author)),
+    );
 
     for (let i = 0; i < uncached.length; i++) {
       const { title, author } = uncached[i];
@@ -116,9 +127,9 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
     }
 
     // Also pull from cache for already-cached entries
-    for (const { title } of booksWithNoInfo) {
+    for (const { title, author } of booksWithNoInfo) {
       if (!results.has(title)) {
-        const cached = this.loadCache().get(title);
+        const cached = this.loadCache().get(this.cacheKey(title, author));
         if (cached?.seriesName) results.set(title, cached);
       }
     }
