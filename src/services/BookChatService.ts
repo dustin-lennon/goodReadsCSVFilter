@@ -104,7 +104,7 @@ If you don't have reliable knowledge of the book's content at the specific progr
     try {
       response = await client.messages.create({
         model: 'claude-sonnet-5',
-        max_tokens: 1024,
+        max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: openingMessage }],
       });
@@ -112,10 +112,8 @@ If you don't have reliable knowledge of the book's content at the specific progr
       throw friendlyApiError(error);
     }
 
-    const assistantText =
-      response.content[0].type === 'text'
-        ? response.content[0].text
-        : 'Sorry, something went wrong.';
+    const textBlock = response.content.find((block) => block.type === 'text');
+    const assistantText = textBlock ? textBlock.text : 'Sorry, something went wrong.';
 
     const now = new Date().toISOString();
     const entry: JournalEntry = {
@@ -169,7 +167,7 @@ Rules:
     try {
       response = await client.messages.create({
         model: 'claude-sonnet-5',
-        max_tokens: 1024,
+        max_tokens: 4096,
         system: systemPrompt,
         messages: history,
       });
@@ -177,10 +175,8 @@ Rules:
       throw friendlyApiError(error);
     }
 
-    const assistantText =
-      response.content[0].type === 'text'
-        ? response.content[0].text
-        : 'Sorry, something went wrong.';
+    const textBlock = response.content.find((block) => block.type === 'text');
+    const assistantText = textBlock ? textBlock.text : 'Sorry, something went wrong.';
 
     const now = new Date().toISOString();
     const userMsg: ChatMessage = { role: 'user', content: userMessage, timestamp: now };
