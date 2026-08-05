@@ -70,7 +70,7 @@ export class LLMSeriesDetectionService {
 
     try {
       const message = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-5',
         max_tokens: 128,
         system:
           'You extract book series information from titles. Respond ONLY with valid JSON. No explanation.',
