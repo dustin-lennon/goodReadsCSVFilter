@@ -1,3 +1,10 @@
+## [1.8.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.2...v1.8.3) (2026-08-05)
+
+
+### Bug Fixes
+
+* **chat:** stop bot from hedging about training cutoff date ([1b02d7f](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/1b02d7f1177f7bde4bf775d802c2a2f6897be438))
+
 ## [1.8.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.1...v1.8.2) (2026-08-05)
 
 
