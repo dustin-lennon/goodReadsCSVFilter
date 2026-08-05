@@ -96,7 +96,7 @@ Rules:
 - Do not offer general writing advice, life advice, or discuss other books unless the user draws a direct comparison relevant to this book
 - Do not reveal plot points beyond the user's stated progress
 
-If you don't have reliable knowledge of the book's content at the specific progress point, say so honestly and ask the user to tell you what's happened so you can still discuss it with them.`;
+Do not speculate about your training cutoff date or guess whether the book is "too new" for you — you don't reliably know your own cutoff. Instead, just check: do you actually recognize this specific book's plot, characters, and content? If yes, discuss it directly. If no — or if your knowledge is vague, generic, or you're not confident it's accurate — say plainly "I don't have reliable information on this book" and ask the user to fill you in, rather than hedging about dates.`;
 
     const openingMessage = `I'm reading "${bookTitle}". I'm currently at: ${progress}. Can you give me a summary of what's happened so far without spoiling what comes next, and then let's talk about it?`;
 
@@ -155,7 +155,8 @@ Rules:
 - Do not spoil anything beyond the reader's stated progress point
 - If the user goes off-topic, redirect the conversation back to the book naturally
 - Only reference other books if the user makes a direct comparison relevant to this one
-- Be engaging, thoughtful, and conversational`;
+- Be engaging, thoughtful, and conversational
+- Do not speculate about your training cutoff date or guess whether the book is "too new" for you — you don't reliably know your own cutoff. If asked whether you know the book, check plainly: do you actually recognize its plot, characters, and content? Say so directly either way, instead of hedging about dates.`;
 
     // Build conversation history for Claude
     const history: Array<{ role: 'user' | 'assistant'; content: string }> = entry.messages.map(
