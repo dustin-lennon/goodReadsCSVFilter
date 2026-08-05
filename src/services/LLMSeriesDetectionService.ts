@@ -71,7 +71,7 @@ export class LLMSeriesDetectionService {
     try {
       const message = await client.messages.create({
         model: 'claude-sonnet-5',
-        max_tokens: 128,
+        max_tokens: 1024,
         system:
           'You extract book series information from titles. Respond ONLY with valid JSON. No explanation.',
         messages: [
@@ -88,7 +88,8 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
         ],
       });
 
-      const text = message.content[0].type === 'text' ? message.content[0].text.trim() : '{}';
+      const textBlock = message.content.find((block) => block.type === 'text');
+      const text = textBlock ? textBlock.text.trim() : '{}';
       const parsed = JSON.parse(text);
       const result: CacheEntry = {
         seriesName: parsed.seriesName ?? null,
