@@ -1,6 +1,6 @@
 {
   "name": "goodreadscsvfilter",
-  "version": "1.7.13",
+  "version": "1.8.0",
   "description": "Intelligent series continuation weighting for GoodReads book selection",
   "main": "dist/gui/main.js",
   "scripts": {

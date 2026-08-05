@@ -1,3 +1,11 @@
+# [1.8.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.13...v1.8.0) (2026-08-05)
+
+
+### Features
+
+* **llm:** upgrade Anthropic model to claude-opus-5 ([6ac8847](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/6ac8847d3e719cbb35cbf827cf170040db2d1821))
+* **llm:** use claude-sonnet-5 instead of claude-opus-5 ([ed024e8](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/ed024e8d1a546fe1abedd6c084b0696b5aec168e)), closes [hi#volume](https://github.com/hi/issues/volume)
+
 ## [1.7.13](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.12...v1.7.13) (2026-07-09)
 
 
