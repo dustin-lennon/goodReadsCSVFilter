@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.1...v1.8.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* **llm:** find text block instead of assuming content[0] ([4b258e3](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/4b258e35434b92481500ba06f585d3762bdfdf09))
+
 ## [1.8.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.0...v1.8.1) (2026-08-05)
 
 
