@@ -103,7 +103,7 @@ If you don't have reliable knowledge of the book's content at the specific progr
     let response;
     try {
       response = await client.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 1024,
         system: systemPrompt,
         messages: [{ role: 'user', content: openingMessage }],
@@ -168,7 +168,7 @@ Rules:
     let response;
     try {
       response = await client.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 1024,
         system: systemPrompt,
         messages: history,
