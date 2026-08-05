@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.0...v1.8.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* **chat:** use claude-sonnet-5 in BookChatService ([ba0d87d](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/ba0d87d590ef12665e000a2de3b18096696b94b1))
+
 # [1.8.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.7.13...v1.8.0) (2026-08-05)
 
 
