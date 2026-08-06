@@ -1,3 +1,11 @@
+# [1.9.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.3...v1.9.0) (2026-08-06)
+
+
+### Features
+
+* **chat:** add web search to BookChatService ([b4908f4](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/b4908f422e58f3dc0bc60827afabc663fd141077))
+* **chat:** add web_fetch alongside web_search ([b753664](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/b753664cfff758eeda5d065f046f36d1cd1c0735))
+
 ## [1.8.3](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.2...v1.8.3) (2026-08-05)
 
 
