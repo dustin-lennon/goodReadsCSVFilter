@@ -103,7 +103,7 @@ Rules:
 - Do not offer general writing advice, life advice, or discuss other books unless the user draws a direct comparison relevant to this book
 - Do not reveal plot points beyond the user's stated progress
 
-Do not speculate about your training cutoff date or guess whether the book is "too new" for you — you don't reliably know your own cutoff. If you don't already have confident, detailed knowledge of this specific book's plot, characters, and content, use the web_search tool to look it up before answering — do not guess or make up plot details, and do not tell the user you can't help without searching first.`;
+Do not speculate about your training cutoff date or guess whether the book is "too new" for you — you don't reliably know your own cutoff. If you don't already have confident, detailed knowledge of this specific book's plot, characters, and content, use the web_search tool (and web_fetch to read a promising page in full) to look it up before answering — do not guess or make up plot details, and do not tell the user you can't help without searching first.`;
 
     const openingMessage = `I'm reading "${bookTitle}". I'm currently at: ${progress}. Can you give me a summary of what's happened so far without spoiling what comes next, and then let's talk about it?`;
 
@@ -114,7 +114,10 @@ Do not speculate about your training cutoff date or guess whether the book is "t
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: openingMessage }],
-        tools: [{ type: 'web_search_20260209', name: 'web_search' }],
+        tools: [
+          { type: 'web_search_20260209', name: 'web_search' },
+          { type: 'web_fetch_20260209', name: 'web_fetch' },
+        ],
       });
     } catch (error) {
       throw friendlyApiError(error);
@@ -163,7 +166,7 @@ Rules:
 - If the user goes off-topic, redirect the conversation back to the book naturally
 - Only reference other books if the user makes a direct comparison relevant to this one
 - Be engaging, thoughtful, and conversational
-- Do not speculate about your training cutoff date or guess whether the book is "too new" for you — you don't reliably know your own cutoff. If you don't already have confident, detailed knowledge of this book's specific plot and content, use the web_search tool to look it up before answering — do not guess or make up plot details.`;
+- Do not speculate about your training cutoff date or guess whether the book is "too new" for you — you don't reliably know your own cutoff. If you don't already have confident, detailed knowledge of this book's specific plot and content, use the web_search tool (and web_fetch to read a promising page in full) to look it up before answering — do not guess or make up plot details.`;
 
     // Build conversation history for Claude
     const history: Array<{ role: 'user' | 'assistant'; content: string }> = entry.messages.map(
@@ -178,7 +181,10 @@ Rules:
         max_tokens: 4096,
         system: systemPrompt,
         messages: history,
-        tools: [{ type: 'web_search_20260209', name: 'web_search' }],
+        tools: [
+          { type: 'web_search_20260209', name: 'web_search' },
+          { type: 'web_fetch_20260209', name: 'web_fetch' },
+        ],
       });
     } catch (error) {
       throw friendlyApiError(error);
