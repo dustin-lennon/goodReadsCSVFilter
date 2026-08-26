@@ -7,10 +7,26 @@ import { getWritablePath } from '../utils/pathResolver';
 
 const CACHE_FILE = getWritablePath('llm-series-cache.json');
 
-type CacheEntry = { seriesName: string | null; bookNumber: number | undefined };
+// "Not part of a series" results expire so a one-off wrong/uncertain LLM guess
+// (e.g. a newly-published sequel the model doesn't recognize yet) doesn't
+// permanently hide a book from series detection. Positive detections never expire.
+const NEGATIVE_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+type CacheEntry = {
+  seriesName: string | null;
+  bookNumber: number | undefined;
+  checkedAt?: number;
+};
 
 export class LLMSeriesDetectionService {
   private static cache: Map<string, CacheEntry> | null = null;
+
+  // Entries with no seriesName are re-checked once the TTL elapses. Entries with
+  // no checkedAt predate this field and are treated as expired.
+  private static isNegativeCacheExpired(entry: CacheEntry): boolean {
+    if (entry.seriesName !== null) return false;
+    return !entry.checkedAt || Date.now() - entry.checkedAt > NEGATIVE_CACHE_TTL_MS;
+  }
 
   // Cache key includes author so stale null entries from author-less queries
   // don't suppress re-queries that now include author context.
@@ -55,7 +71,7 @@ export class LLMSeriesDetectionService {
     const cache = this.loadCache();
     const key = this.cacheKey(title, author);
 
-    if (cache.has(key)) {
+    if (cache.has(key) && !this.isNegativeCacheExpired(cache.get(key)!)) {
       return cache.get(key)!;
     }
 
@@ -94,13 +110,18 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
       const result: CacheEntry = {
         seriesName: parsed.seriesName ?? null,
         bookNumber: parsed.bookNumber ?? undefined,
+        checkedAt: Date.now(),
       };
 
       cache.set(key, result);
       this.persistCache();
       return result;
     } catch {
-      const fallback: CacheEntry = { seriesName: null, bookNumber: undefined };
+      const fallback: CacheEntry = {
+        seriesName: null,
+        bookNumber: undefined,
+        checkedAt: Date.now(),
+      };
       cache.set(key, fallback);
       this.persistCache();
       return fallback;
@@ -116,9 +137,10 @@ If it is not part of a series, use null for both. Book number can be decimal (e.
     onProgress?: (done: number, total: number) => void,
   ): Promise<Map<string, SeriesInfo>> {
     const results = new Map<string, SeriesInfo>();
-    const uncached = booksWithNoInfo.filter(
-      (b) => !this.loadCache().has(this.cacheKey(b.title, b.author)),
-    );
+    const uncached = booksWithNoInfo.filter((b) => {
+      const cached = this.loadCache().get(this.cacheKey(b.title, b.author));
+      return !cached || this.isNegativeCacheExpired(cached);
+    });
 
     for (let i = 0; i < uncached.length; i++) {
       const { title, author } = uncached[i];

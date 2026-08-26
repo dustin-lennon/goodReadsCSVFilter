@@ -116,6 +116,94 @@ describe('LLMSeriesDetectionService', () => {
     });
   });
 
+  describe('negative-result cache expiry', () => {
+    const TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+    it('re-queries when a null result is older than the TTL', async () => {
+      const cache = new Map<
+        string,
+        { seriesName: string | null; bookNumber: number | undefined; checkedAt?: number }
+      >([
+        [
+          'If Only I Had Told Her|laura nowlin',
+          { seriesName: null, bookNumber: undefined, checkedAt: Date.now() - TTL_MS - 1000 },
+        ],
+      ]);
+      (LLMSeriesDetectionService as unknown as { cache: typeof cache }).cache = cache;
+
+      getMockCreate().mockResolvedValueOnce(makeApiResponse('If He Had Been with Me', 2));
+
+      const result = await LLMSeriesDetectionService.extractSeriesInfo(
+        'If Only I Had Told Her',
+        'Laura Nowlin',
+      );
+
+      expect(result.seriesName).toBe('If He Had Been with Me');
+      expect(getMockCreate()).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not re-query when a null result is within the TTL', async () => {
+      const cache = new Map<
+        string,
+        { seriesName: string | null; bookNumber: number | undefined; checkedAt?: number }
+      >([
+        [
+          'Some Standalone Book|jane author',
+          { seriesName: null, bookNumber: undefined, checkedAt: Date.now() },
+        ],
+      ]);
+      (LLMSeriesDetectionService as unknown as { cache: typeof cache }).cache = cache;
+
+      const result = await LLMSeriesDetectionService.extractSeriesInfo(
+        'Some Standalone Book',
+        'Jane Author',
+      );
+
+      expect(result.seriesName).toBeNull();
+      expect(getMockCreate()).not.toHaveBeenCalled();
+    });
+
+    it('treats a null result with no checkedAt (pre-TTL cache format) as expired', async () => {
+      const cache = new Map<
+        string,
+        { seriesName: string | null; bookNumber: number | undefined; checkedAt?: number }
+      >([['Legacy Title|legacy author', { seriesName: null, bookNumber: undefined }]]);
+      (LLMSeriesDetectionService as unknown as { cache: typeof cache }).cache = cache;
+
+      getMockCreate().mockResolvedValueOnce(makeApiResponse('Legacy Series', 3));
+
+      const result = await LLMSeriesDetectionService.extractSeriesInfo(
+        'Legacy Title',
+        'Legacy Author',
+      );
+
+      expect(result.seriesName).toBe('Legacy Series');
+      expect(getMockCreate()).toHaveBeenCalledTimes(1);
+    });
+
+    it('enrichMissingSeriesInfo re-queries expired null entries', async () => {
+      const cache = new Map<
+        string,
+        { seriesName: string | null; bookNumber: number | undefined; checkedAt?: number }
+      >([
+        [
+          'If Only I Had Told Her|laura nowlin',
+          { seriesName: null, bookNumber: undefined, checkedAt: Date.now() - TTL_MS - 1000 },
+        ],
+      ]);
+      (LLMSeriesDetectionService as unknown as { cache: typeof cache }).cache = cache;
+
+      getMockCreate().mockResolvedValueOnce(makeApiResponse('If He Had Been with Me', 2));
+
+      const results = await LLMSeriesDetectionService.enrichMissingSeriesInfo([
+        { title: 'If Only I Had Told Her', author: 'Laura Nowlin' },
+      ]);
+
+      expect(getMockCreate()).toHaveBeenCalledTimes(1);
+      expect(results.get('If Only I Had Told Her')?.seriesName).toBe('If He Had Been with Me');
+    });
+  });
+
   describe('enrichMissingSeriesInfo', () => {
     it('skips titles already cached with matching author key', async () => {
       getMockCreate().mockResolvedValueOnce(makeApiResponse('Colter Shaw', 1));
