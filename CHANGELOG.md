@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.9.0...v1.9.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **series-detection:** expire negative LLM cache entries after 30 days ([5aa76da](https://github.com/dustin-lennon/goodReadsCSVFilter/commit/5aa76da954c18b7bf0a35f0fde18301da2a0bd29)), closes [#215](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/215) [#1](https://github.com/dustin-lennon/goodReadsCSVFilter/issues/1)
+
 # [1.9.0](https://github.com/dustin-lennon/goodReadsCSVFilter/compare/v1.8.3...v1.9.0) (2026-08-06)
 
 
